@@ -984,14 +984,33 @@ function EditProductModal({ product, onClose }) {
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <input type="text" name="title" value={formData.title} onChange={handleChange} required placeholder="Product Title" className="p-3 border border-gray-300 rounded-lg" />
           <input type="number" name="price" value={formData.price} onChange={handleChange} required placeholder="Price" className="p-3 border border-gray-300 rounded-lg" />
-          <input type="text" name="category" value={formData.category} onChange={handleChange} required placeholder="Category" className="p-3 border border-gray-300 rounded-lg" />
+          <select 
+  name="category" 
+  value={formData.category} 
+  onChange={handleChange} 
+  required 
+  className="p-3 border border-gray-300 rounded-lg bg-white text-gray-700 outline-none cursor-pointer"
+>
+  <option value="" disabled>Select Category</option>
+  <option value="Fresh">Fresh</option>
+  <option value="Grocery">Grocery</option>
+  <option value="Electronics">Electronics</option>
+  <option value="Fashion">Fashion</option>
+  <option value="Beauty">Beauty</option>
+  <option value="Home">Home</option>
+  <option value="Kids">Kids</option>
+</select>
           
           <label className="text-sm font-bold text-gray-600">Update Image (Optional):</label>
           <input type="file" onChange={handleFileChange} className="p-2 border border-gray-300 rounded-lg" />
           
           <div className="flex gap-4 mt-4">
-            <button type="submit" className="bg-blue-600 text-white p-3 flex-1 rounded-lg font-bold">Save Changes</button>
-            <button type="button" onClick={onClose} className="bg-red-500 text-white p-3 flex-1 rounded-lg font-bold">Cancel</button>
+            <button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white p-3 flex-1 rounded-lg font-bold cursor-pointer transition-colors shadow-sm">
+  Save Changes
+</button>
+<button type="button" onClick={onClose} className="bg-red-500 hover:bg-red-600 text-white p-3 flex-1 rounded-lg font-bold cursor-pointer transition-colors shadow-sm">
+  Cancel
+</button>
           </div>
         </form>
       </div>
