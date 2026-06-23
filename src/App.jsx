@@ -358,8 +358,6 @@ export default function App() {
             cart={cart} 
             removeFromCart={removeFromCart} 
             setView={setView} 
-            handleDelete={handleDelete} 
-            handleEditClick={handleEditClick} 
           />
         )}
         {/* ========================================== */}
@@ -860,10 +858,9 @@ function HelpView({ setView }) {
 }
 
 /* =========================================
-   PRODUCT DETAIL PAGE
+   PRODUCT DETAIL PAGE (CLEANED - NO ADMIN CONTROLS)
 ========================================= */
-// 1. Added handleDelete and handleEditClick in the props here 👇
-function ProductDetailView({ product, addToCart, cart, removeFromCart, setView, handleDelete, handleEditClick }) {
+function ProductDetailView({ product, addToCart, cart, removeFromCart, setView }) {
   if (!product) return null;
   const cartItem = cart.find(i => i.id === product.id);
   const qty = cartItem ? cartItem.quantity : 0;
@@ -913,26 +910,6 @@ function ProductDetailView({ product, addToCart, cart, removeFromCart, setView, 
               </div>
             </div>
           </div>
-
-          {/* ========================================== */}
-          {/* 2. ADDED EDIT AND DELETE BUTTONS HERE 👇 */}
-          {/* ========================================== */}
-          <div className="flex gap-4 pt-2">
-            <button 
-              onClick={() => handleEditClick(product)} 
-              className="bg-blue-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-blue-700 transition cursor-pointer flex-1"
-            >
-              Edit Product
-            </button>
-            <button 
-              onClick={() => handleDelete(product._id || product.id)} 
-              className="bg-red-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-red-700 transition cursor-pointer flex-1"
-            >
-              Delete Product
-            </button>
-          </div>
-          {/* ========================================== */}
-
         </div>
       </div>
     </div>
@@ -1259,6 +1236,9 @@ function SellerDashboard({ user, onLogout }) {
   const [orders, setOrders] = useState([]);
   const [newProduct, setNewProduct] = useState({ title: '', price: '', category: 'Fresh', file: null });
 
+  // 1. ADDED STATE FOR EDITING
+  const [editingProduct, setEditingProduct] = useState(null);
+
   const loadData = () => {
     fetch(`${API_URL}/products/all`).then(res => res.json()).then(data => setProducts(data.filter(p => p.sellerId === user.id)));
     fetch(`${API_URL}/orders/all`).then(res => res.json()).then(data => setOrders(data.reverse()));
@@ -1289,11 +1269,45 @@ function SellerDashboard({ user, onLogout }) {
     loadData();
   };
 
+  // 2. ADDED DELETE FUNCTION
+  const handleDelete = async (productId) => {
+    const isConfirmed = window.confirm("Are you sure you want to delete this product from your inventory?");
+    if (!isConfirmed) return;
+
+    try {
+      const response = await fetch(`${API_URL}/products/delete/${productId}`, {
+        method: 'DELETE',
+      });
+      
+      if (response.ok) {
+        alert("Product deleted successfully! 🗑️");
+        loadData(); // Reloads the dashboard data automatically
+      } else {
+        alert("Failed to delete product.");
+      }
+    } catch (error) {
+      console.error("Error deleting product:", error);
+    }
+  };
+
+  // 3. ADDED EDIT CLICK FUNCTION
+  const handleEditClick = (product) => {
+    setEditingProduct(product);
+  };
+
   const activeOrders = orders.filter(o => o.status !== 'DELIVERED').length;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 pb-24 md:pb-20 relative z-10 selection:bg-indigo-200">
       
+      {/* 4. RENDER EDIT MODAL IF EDITING */}
+      {editingProduct && (
+        <EditProductModal 
+          product={editingProduct} 
+          onClose={() => { setEditingProduct(null); loadData(); }} 
+        />
+      )}
+
       {/* BACKGROUND AESTHETICS */}
       <div className="absolute top-0 right-0 w-96 h-96 bg-purple-400/20 rounded-full blur-[120px] pointer-events-none"></div>
       <div className="absolute bottom-0 left-0 w-96 h-96 bg-blue-400/20 rounded-full blur-[120px] pointer-events-none"></div>
@@ -1337,7 +1351,7 @@ function SellerDashboard({ user, onLogout }) {
            </div>
         </div>
         
-        {/* 3. PREMIUM RESTOCK INVENTORY FORM (Perfect Alignment Retained) */}
+        {/* 3. PREMIUM RESTOCK INVENTORY FORM */}
         <div className="bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden border border-gray-100">
           <div className="bg-gradient-to-r from-gray-900 to-indigo-900 px-6 md:px-8 py-5 flex items-center justify-between">
              <h3 className="font-black text-white text-lg md:text-xl flex items-center gap-2">
@@ -1374,6 +1388,50 @@ function SellerDashboard({ user, onLogout }) {
                 Publish Item
               </button>
             </form>
+          </div>
+        </div>
+
+        {/* 5. 💥 NEW FEATURE: MANAGE LIVE INVENTORY 💥 */}
+        <div className="bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden border border-gray-100">
+          <div className="bg-white px-6 md:px-8 py-5 border-b border-gray-100 flex justify-between items-center sticky top-0 z-10">
+             <h3 className="font-black text-gray-900 text-lg md:text-xl flex items-center gap-2">
+               Manage Live Inventory ⚙️
+             </h3>
+          </div>
+          <div className="p-4 md:p-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 max-h-[500px] overflow-y-auto hide-scroll bg-gray-50/50">
+            {products.map(p => (
+              <div key={p._id} className="bg-white p-4 rounded-[1.5rem] border border-gray-100 shadow-sm flex flex-col justify-between hover:shadow-md transition-all">
+                <div>
+                  <div className="h-32 w-full bg-gray-50 rounded-xl flex items-center justify-center mb-3 overflow-hidden">
+                    <img src={`${API_URL.replace('/api', '')}/uploads/${p.imagePath}`} alt={p.title} className="max-h-full max-w-full object-contain mix-blend-multiply" onError={(e) => e.target.src='https://via.placeholder.com/150'} />
+                  </div>
+                  <h4 className="font-black text-md text-gray-900 truncate">{p.title}</h4>
+                  <p className="text-indigo-600 font-black text-lg mb-4">₹{p.price}</p>
+                </div>
+                
+                {/* Admin Action Buttons */}
+                <div className="flex gap-2 mt-auto">
+                  <button 
+                    onClick={() => handleEditClick(p)} 
+                    className="flex-1 bg-blue-50 text-blue-600 font-bold py-2 rounded-xl text-xs hover:bg-blue-600 hover:text-white transition-colors cursor-pointer"
+                  >
+                    Edit
+                  </button>
+                  <button 
+                    onClick={() => handleDelete(p._id || p.id)} 
+                    className="flex-1 bg-red-50 text-red-600 font-bold py-2 rounded-xl text-xs hover:bg-red-600 hover:text-white transition-colors cursor-pointer"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
+            ))}
+            
+            {products.length === 0 && (
+              <div className="col-span-full text-center py-10">
+                <p className="text-gray-500 font-bold">Your inventory is empty. Start adding items above!</p>
+              </div>
+            )}
           </div>
         </div>
 
