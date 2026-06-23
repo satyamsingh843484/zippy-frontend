@@ -986,10 +986,10 @@ function EditProductModal({ product, onClose }) {
           <input type="number" name="price" value={formData.price} onChange={handleChange} required placeholder="Price" className="p-3 border border-gray-300 rounded-lg" />
           <select 
   name="category" 
-  value={formData.category} 
+  value={formData.category} /* (Agar Restock wale mein naam alag ho, toh apna purana value/onChange rehne dena) */
   onChange={handleChange} 
   required 
-  className="p-3 border border-gray-300 rounded-lg bg-white text-gray-700 outline-none cursor-pointer"
+  className="p-3 w-full border border-gray-300 rounded-lg bg-white text-gray-700 outline-none cursor-pointer"
 >
   <option value="" disabled>Select Category</option>
   <option value="Fresh">Fresh</option>
@@ -999,10 +999,17 @@ function EditProductModal({ product, onClose }) {
   <option value="Beauty">Beauty</option>
   <option value="Home">Home</option>
   <option value="Kids">Kids</option>
+  <option value="50% Off">50% Off</option>
+  <option value="School Time">School Time</option>
+  <option value="Father's Day">Father's Day</option>
 </select>
           
           <label className="text-sm font-bold text-gray-600">Update Image (Optional):</label>
-          <input type="file" onChange={handleFileChange} className="p-2 border border-gray-300 rounded-lg" />
+          <input 
+  type="file" 
+  onChange={handleFileChange} 
+  className="p-2 w-full border border-gray-300 rounded-lg cursor-pointer file:cursor-pointer file:bg-blue-50 file:text-blue-700 file:border-0 file:px-4 file:py-2 file:rounded-md file:font-semibold hover:file:bg-blue-100 transition-all" 
+/>
           
           <div className="flex gap-4 mt-4">
             <button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white p-3 flex-1 rounded-lg font-bold cursor-pointer transition-colors shadow-sm">
