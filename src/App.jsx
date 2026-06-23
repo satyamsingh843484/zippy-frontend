@@ -296,12 +296,7 @@ export default function App() {
                         <div key={item._id} onClick={() => { openProduct(item); setSearchQuery(''); setShowSuggestions(false); }} className="px-5 py-3 hover:bg-blue-50 cursor-pointer flex items-center justify-between group transition-colors">
                            <div className="flex items-center gap-3">
                               <div className="w-10 h-10 bg-gray-50 rounded-lg flex items-center justify-center p-1 border border-gray-100">
-  <img 
-    src={item.imagePath.startsWith('http') ? item.imagePath : getImgSrc(item.imagePath)} 
-    className="max-w-full max-h-full object-contain mix-blend-multiply" 
-    alt=""
-    onError={(e) => e.target.src='https://via.placeholder.com/50'} 
-  />
+  <img src={item.imagePath?.startsWith('http') ? item.imagePath : getImgSrc(item.imagePath)} className="w-8 h-8 object-contain mix-blend-multiply" alt="" onError={(e) => e.target.src='https://via.placeholder.com/50'} />
 </div>
                               <div>
                                 <p className="text-sm font-black text-gray-800 group-hover:text-blue-600 transition">{item.title}</p>
@@ -748,7 +743,7 @@ const filteredProducts = activeTheme === 'All'
                   <div className="absolute top-0 left-0 bg-[#0b5cff] text-white text-[9px] font-black px-2 py-1 rounded-br-lg rounded-tl-2xl shadow-sm z-10 uppercase tracking-widest">Bestseller</div>
                   
                   <div className="h-28 md:h-32 w-full mb-3 rounded-xl overflow-hidden flex items-center justify-center p-2 relative bg-gray-50/50 mt-2">
-                     <img src={product.imagePath.startsWith('http') ? product.imagePath : `${API_URL.replace('/api', '')}/uploads/${product.imagePath}`} alt={product.title} className="max-h-full max-w-full object-contain mix-blend-multiply hover:scale-105 transition-transform duration-500" onError={(e) => e.target.src='https://via.placeholder.com/400'} />
+                     <img src={product.imagePath?.startsWith('http') ? product.imagePath : `${API_URL.replace('/api', '')}/uploads/${product.imagePath}`} alt={product.title} className="max-h-full max-w-full object-contain mix-blend-multiply hover:scale-105 transition-transform duration-500" onError={(e) => e.target.src='https://via.placeholder.com/400'} />
                   </div>
                   
                   <div className="flex flex-col flex-1 justify-between">
@@ -888,7 +883,7 @@ function ProductDetailView({ product, addToCart, cart, removeFromCart, setView }
       <div className="grid md:grid-cols-2 gap-8 lg:gap-20">
         <div className="flex flex-col relative">
           <div className="bg-white rounded-[2rem] border border-gray-100 shadow-[0_4px_20px_rgba(0,0,0,0.03)] p-8 md:p-12 flex items-center justify-center h-[350px] md:h-[500px] mb-6">
-          <img src={product.imagePath.startsWith('http') ? product.imagePath : `${API_URL.replace('/api', '')}/uploads/${product.imagePath}`} alt={product.title} className="max-h-full max-w-full object-contain mix-blend-multiply hover:scale-105 transition-transform duration-500" onError={(e) => e.target.src='https://via.placeholder.com/400'} />  
+          <img src={product.imagePath?.startsWith('http') ? product.imagePath : `${API_URL.replace('/api', '')}/uploads/${product.imagePath}`} alt={product.title} className="max-h-full max-w-full object-contain mix-blend-multiply hover:scale-105 transition-transform duration-500" onError={(e) => e.target.src='https://via.placeholder.com/400'} />  
           </div>
           <div className="bg-white rounded-2xl flex items-center justify-between text-gray-900 border-2 border-blue-600 overflow-hidden shadow-sm">
             {(() => {
@@ -1415,7 +1410,7 @@ function SellerDashboard({ user, onLogout }) {
               <div key={p._id} className="bg-white p-4 rounded-[1.5rem] border border-gray-100 shadow-sm flex flex-col justify-between hover:shadow-md transition-all">
                 <div>
                   <div className="h-32 w-full bg-gray-50 rounded-xl flex items-center justify-center mb-3 overflow-hidden">
-                  <img src={p.imagePath.startsWith('http') ? p.imagePath : `${API_URL.replace('/api', '')}/uploads/${p.imagePath}`} alt={p.title} className="max-h-full max-w-full object-contain mix-blend-multiply" onError={(e) => e.target.src='https://via.placeholder.com/150'} /> 
+                  <img src={p.imagePath?.startsWith('http') ? p.imagePath : `${API_URL.replace('/api', '')}/uploads/${p.imagePath}`} alt={p.title} className="max-h-full max-w-full object-contain mix-blend-multiply" onError={(e) => e.target.src='https://via.placeholder.com/150'} /> 
                   </div>
                   <h4 className="font-black text-md text-gray-900 truncate">{p.title}</h4>
                   <p className="text-indigo-600 font-black text-lg mb-4">₹{p.price}</p>
