@@ -6,7 +6,7 @@ const socket = io(`https://zippy-backend-vc4w.onrender.com`); // <--- YAHAN ADD 
 // 👇👇 BAS YE 4 LINES YAHAN PASTE KAR DO 👇👇
 const getImgSrc = (path) => {
   if (!path) return 'https://via.placeholder.com/150';
-  return path.startsWith('http') ? path : `http://${HOST}:8080/uploads/${path}`;
+  return path.startsWith('http') ? path : `https://zippy-backend-vc4w.onrender.com/uploads/${path}`;
 };
 // 👆👆 =================================== 👆👆
 
