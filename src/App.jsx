@@ -149,6 +149,39 @@ export default function App() {
   const handleLogout = () => {
     setUser(null); localStorage.removeItem('zippy_user'); setCart([]); setView('home');
   };
+  // ==========================================
+  // EDIT AND DELETE LOGIC
+  // ==========================================
+  
+  // State to track which product is currently being edited
+  const [editingProduct, setEditingProduct] = useState(null);
+
+  // Function to handle deleting a product
+  const handleDelete = async (productId) => {
+    const isConfirmed = window.confirm("Are you sure you want to delete this product?");
+    if (!isConfirmed) return;
+
+    try {
+      // Calling the backend API to delete the product
+      const response = await fetch(`https://zippy-backend-vc4w.onrender.com/api/products/delete/${productId}`, {
+        method: 'DELETE',
+      });
+      
+      if (response.ok) {
+        alert("Product deleted successfully!");
+        window.location.reload(); // Refresh the page to update the product list
+      } else {
+        alert("Failed to delete product.");
+      }
+    } catch (error) {
+      console.error("Error deleting product:", error);
+    }
+  };
+
+  // Function to trigger the edit popup form
+  const handleEditClick = (product) => {
+    setEditingProduct(product); 
+  };
 
   // --- SMART ADD TO CART (FIXED FOR MONGODB _ID & CAFE ID) ---
   // --- BUG-FREE SMART CART LOGIC ---
@@ -198,7 +231,15 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#fafafa] text-gray-900 font-sans overflow-x-hidden selection:bg-blue-200 selection:text-blue-900 pb-28 md:pb-0 relative z-0">
-      
+      {/* ========================================== */}
+      {/* Render the Edit Modal only if a product is selected for editing */}
+      {editingProduct && (
+        <EditProductModal 
+          product={editingProduct} 
+          onClose={() => setEditingProduct(null)} 
+        />
+      )}
+      {/* ========================================== */}
       <style>{`
         @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
         .animate-fade-in-up { animation: fadeInUp 0.6s ease-out forwards; }
@@ -306,7 +347,23 @@ export default function App() {
       <main className="w-full relative z-10">
         {view === 'home' && user?.role !== 'SELLER' && <HomeView products={products} addToCart={addToCart} openProduct={openProduct} location={location} setIsChangingLocation={setIsChangingLocation} isLoading={isLoading} user={user} setIsAuthOpen={setIsAuthOpen} setView={setView} activeTheme={activeCategory} setActiveTheme={setActiveCategory} getImgSrc={getImgSrc} searchQuery={searchQuery} handleSearchChange={handleSearchChange} showSuggestions={showSuggestions} searchSuggestions={searchSuggestions} setShowSuggestions={setShowSuggestions} />}
         {view === 'categories' && user?.role !== 'SELLER' && <CategoriesView setView={setView} setActiveCategory={setActiveCategory} />}
-        {view === 'product' && user?.role !== 'SELLER' && <ProductDetailView product={selectedProduct} addToCart={addToCart} cart={cart} removeFromCart={removeFromCart} setView={setView} />}
+        
+        {/* ========================================== */}
+        {/* 💥 UPDATED PRODUCT DETAIL VIEW ROUTE 💥 */}
+        {/* ========================================== */}
+        {view === 'product' && user?.role !== 'SELLER' && (
+          <ProductDetailView 
+            product={selectedProduct} 
+            addToCart={addToCart} 
+            cart={cart} 
+            removeFromCart={removeFromCart} 
+            setView={setView} 
+            handleDelete={handleDelete} 
+            handleEditClick={handleEditClick} 
+          />
+        )}
+        {/* ========================================== */}
+
         {view === 'account' && user?.role !== 'SELLER' && <AccountView user={user} onLogout={handleLogout} setView={setView} />}
         {view === 'help' && user?.role !== 'SELLER' && <HelpView setView={setView} />}
         {view === 'seller' && <SellerDashboard user={user} onLogout={handleLogout} />}
@@ -805,7 +862,8 @@ function HelpView({ setView }) {
 /* =========================================
    PRODUCT DETAIL PAGE
 ========================================= */
-function ProductDetailView({ product, addToCart, cart, removeFromCart, setView }) {
+// 1. Added handleDelete and handleEditClick in the props here 👇
+function ProductDetailView({ product, addToCart, cart, removeFromCart, setView, handleDelete, handleEditClick }) {
   if (!product) return null;
   const cartItem = cart.find(i => i.id === product.id);
   const qty = cartItem ? cartItem.quantity : 0;
@@ -825,19 +883,15 @@ function ProductDetailView({ product, addToCart, cart, removeFromCart, setView }
           </div>
           <div className="bg-white rounded-2xl flex items-center justify-between text-gray-900 border-2 border-blue-600 overflow-hidden shadow-sm">
             {(() => {
-              // Cart mein check karo ki ye product hai ya nahi
               const cartItem = cart.find(item => (item._id || item.id) === (product._id || product.id));
               const currentQty = cartItem ? cartItem.quantity : 0;
 
               return currentQty === 0 ? (
-                // 🔵 AGAR CART MEIN NAHI HAI: Show ADD TO CART
                 <button onClick={() => addToCart(product)} className="w-full py-4 font-black text-base md:text-lg text-blue-600 hover:bg-blue-50 transition cursor-pointer">
                   ADD TO CART
                 </button>
               ) : (
-                // 🟢 AGAR CART MEIN HAI: Show + / - Selector
                 <div className="w-full flex items-center justify-between px-6 md:px-8 py-2 md:py-3 bg-blue-600 text-white">
-                  {/* Yahan product._id || product.id pass karna zaroori hai */}
                   <button onClick={() => removeFromCart(product._id || product.id)} className="text-3xl font-light hover:scale-125 transition cursor-pointer">−</button>
                   <span className="text-xl md:text-2xl font-black">{currentQty}</span>
                   <button onClick={() => addToCart(product)} className="text-3xl font-light hover:scale-125 transition cursor-pointer">+</button>
@@ -859,7 +913,103 @@ function ProductDetailView({ product, addToCart, cart, removeFromCart, setView }
               </div>
             </div>
           </div>
+
+          {/* ========================================== */}
+          {/* 2. ADDED EDIT AND DELETE BUTTONS HERE 👇 */}
+          {/* ========================================== */}
+          <div className="flex gap-4 pt-2">
+            <button 
+              onClick={() => handleEditClick(product)} 
+              className="bg-blue-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-blue-700 transition cursor-pointer flex-1"
+            >
+              Edit Product
+            </button>
+            <button 
+              onClick={() => handleDelete(product._id || product.id)} 
+              className="bg-red-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-red-700 transition cursor-pointer flex-1"
+            >
+              Delete Product
+            </button>
+          </div>
+          {/* ========================================== */}
+
         </div>
+      </div>
+    </div>
+  );
+}
+// 👇👇 PASTE THE NEW COMPONENT HERE (AT THE VERY BOTTOM OF THE FILE) 👇👇
+
+// Component for the Edit Product Modal (Popup Form)
+function EditProductModal({ product, onClose }) {
+  // Store the form input values
+  const [formData, setFormData] = useState({
+    title: product.title,
+    price: product.price,
+    category: product.category,
+  });
+  const [file, setFile] = useState(null);
+
+  // Update state when user types in the text fields
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  // Update state when user selects a new image
+  const handleFileChange = (e) => {
+    setFile(e.target.files[0]);
+  };
+
+  // Send the updated data to the backend when form is submitted
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    // Using FormData to send text and image file together
+    const data = new FormData();
+    data.append('title', formData.title);
+    data.append('price', formData.price);
+    data.append('category', formData.category);
+    
+    if (file) {
+      data.append('file', file);
+    }
+
+    try {
+      // Calling the correct backend API URL with /api/products/edit/
+      const response = await fetch(`https://zippy-backend-vc4w.onrender.com/api/products/edit/${product._id || product.id}`, {
+        method: 'PUT',
+        body: data
+      });
+
+      if (response.ok) {
+        alert("Product updated successfully!");
+        window.location.reload(); // Refresh to see updated data
+      } else {
+        alert("Failed to update product.");
+      }
+    } catch (error) {
+      console.error("Error updating product:", error);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/50 z-50 flex justify-center items-center">
+      <div className="bg-white p-6 rounded-2xl w-[400px] shadow-xl">
+        <h2 className="text-2xl font-bold mb-4">Edit Product</h2>
+        
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          <input type="text" name="title" value={formData.title} onChange={handleChange} required placeholder="Product Title" className="p-3 border border-gray-300 rounded-lg" />
+          <input type="number" name="price" value={formData.price} onChange={handleChange} required placeholder="Price" className="p-3 border border-gray-300 rounded-lg" />
+          <input type="text" name="category" value={formData.category} onChange={handleChange} required placeholder="Category" className="p-3 border border-gray-300 rounded-lg" />
+          
+          <label className="text-sm font-bold text-gray-600">Update Image (Optional):</label>
+          <input type="file" onChange={handleFileChange} className="p-2 border border-gray-300 rounded-lg" />
+          
+          <div className="flex gap-4 mt-4">
+            <button type="submit" className="bg-blue-600 text-white p-3 flex-1 rounded-lg font-bold">Save Changes</button>
+            <button type="button" onClick={onClose} className="bg-red-500 text-white p-3 flex-1 rounded-lg font-bold">Cancel</button>
+          </div>
+        </form>
       </div>
     </div>
   );
