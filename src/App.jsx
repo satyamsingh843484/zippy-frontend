@@ -743,7 +743,7 @@ const filteredProducts = activeTheme === 'All'
                   <div className="absolute top-0 left-0 bg-[#0b5cff] text-white text-[9px] font-black px-2 py-1 rounded-br-lg rounded-tl-2xl shadow-sm z-10 uppercase tracking-widest">Bestseller</div>
                   
                   <div className="h-28 md:h-32 w-full mb-3 rounded-xl overflow-hidden flex items-center justify-center p-2 relative bg-gray-50/50 mt-2">
-                     <img src={product.imagePath?.startsWith('http') ? product.imagePath : `${API_URL.replace('/api', '')}/uploads/${product.imagePath}`} alt={product.title} className="max-h-full max-w-full object-contain mix-blend-multiply hover:scale-105 transition-transform duration-500" onError={(e) => e.target.src='https://via.placeholder.com/400'} />
+                     <img src={p.imagePath?.startsWith('http') ? p.imagePath : `${API_URL.replace('/api', '')}/uploads/${p.imagePath}`} alt={p.title} className="max-h-full max-w-full object-contain mix-blend-multiply hover:scale-105 transition-transform duration-500" onError={(e) => e.target.src='https://via.placeholder.com/400'} />
                   </div>
                   
                   <div className="flex flex-col flex-1 justify-between">
