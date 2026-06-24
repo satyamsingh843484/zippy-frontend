@@ -1576,7 +1576,7 @@ function SellerDashboard({ user, onLogout }) {
           </div>
         </div>
 
-        {/* 5. 💥 NEW FEATURE: MANAGE LIVE INVENTORY 💥 */}
+        {/* 5. MANAGE LIVE INVENTORY */}
         <div className="bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden border border-gray-100">
           <div className="bg-white px-6 md:px-8 py-5 border-b border-gray-100 flex justify-between items-center sticky top-0 z-10">
              <h3 className="font-black text-gray-900 text-lg md:text-xl flex items-center gap-2">
@@ -1620,7 +1620,7 @@ function SellerDashboard({ user, onLogout }) {
           </div>
         </div>
 
-        {/* 4. MODERN INCOMING ORDERS FEED */}
+        {/* 4. MODERN INCOMING ORDERS FEED (UPGRADED WITH ITEM DETAILS) */}
         <div className="bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden border border-gray-100">
           <div className="bg-white px-6 md:px-8 py-5 border-b border-gray-100 flex justify-between items-center sticky top-0 z-10">
              <h3 className="font-black text-gray-900 text-lg md:text-xl flex items-center gap-2">
@@ -1629,43 +1629,72 @@ function SellerDashboard({ user, onLogout }) {
           </div>
           <div className="p-4 md:p-6 grid gap-4 max-h-[600px] overflow-y-auto hide-scroll bg-gray-50/50">
             {orders.map(o => (
-              <div key={o._id} className={`flex flex-col md:flex-row justify-between md:items-center bg-white p-5 md:p-6 rounded-[1.5rem] border ${o.status === 'DELIVERED' ? 'border-gray-200 opacity-60 grayscale-[30%]' : 'border-indigo-100 shadow-[0_4px_20px_rgb(0,0,0,0.03)] hover:shadow-[0_8px_30px_rgb(79,70,229,0.1)]'} transition-all duration-300 gap-4`}>
+              <div key={o._id} className={`flex flex-col bg-white p-5 md:p-6 rounded-[1.5rem] border ${o.status === 'DELIVERED' ? 'border-gray-200 opacity-60 grayscale-[30%]' : 'border-indigo-100 shadow-[0_4px_20px_rgb(0,0,0,0.03)] hover:shadow-[0_8px_30px_rgb(79,70,229,0.1)]'} transition-all duration-300 gap-4`}>
                 
-                <div className="flex items-start gap-4">
-                   <div className={`w-12 h-12 rounded-full flex items-center justify-center font-black text-lg shadow-inner ${o.status === 'DELIVERED' ? 'bg-gray-100 text-gray-400' : 'bg-indigo-50 text-indigo-600'}`}>
-                     {o.customerName.charAt(0)}
-                   </div>
-                   <div>
-                     <div className="flex items-center gap-2">
-                       <h4 className="font-black text-lg md:text-xl text-gray-900 leading-tight">{o.customerName}</h4>
-                       <span className="text-[10px] font-bold text-gray-400 bg-gray-100 px-2 py-0.5 rounded-md">#{o._id ? o._id.substring(o._id.length - 6) : '---'}</span>
+                {/* Top Section: Customer Info & Buttons */}
+                <div className="flex flex-col md:flex-row justify-between md:items-start md:items-center gap-4">
+                  <div className="flex items-start gap-4">
+                     <div className={`w-12 h-12 rounded-full flex items-center justify-center font-black text-lg shadow-inner ${o.status === 'DELIVERED' ? 'bg-gray-100 text-gray-400' : 'bg-indigo-50 text-indigo-600'}`}>
+                       {o.customerName.charAt(0)}
                      </div>
-                     <p className="text-indigo-600 font-black text-base mt-1">₹{Number(o.totalAmount).toFixed(0)}</p>
-                   </div>
+                     <div>
+                       <div className="flex items-center gap-2">
+                         <h4 className="font-black text-lg md:text-xl text-gray-900 leading-tight">{o.customerName}</h4>
+                         <span className="text-[10px] font-bold text-gray-400 bg-gray-100 px-2 py-0.5 rounded-md">#{o._id ? o._id.substring(o._id.length - 6) : '---'}</span>
+                       </div>
+                       <p className="text-indigo-600 font-black text-base mt-1">₹{Number(o.totalAmount).toFixed(0)}</p>
+                     </div>
+                  </div>
+
+                  <div className="flex flex-wrap md:flex-nowrap items-center gap-3 md:gap-4 mt-2 md:mt-0">
+                     {/* DYNAMIC STATUS BADGE */}
+                     <span className={`font-black tracking-wider text-[10px] md:text-xs px-4 py-2 rounded-xl border w-full md:w-auto text-center shadow-sm uppercase
+                       ${o.status === 'RECEIVED' ? 'bg-rose-50 text-rose-600 border-rose-200' : 
+                         o.status === 'PACKING' ? 'bg-amber-50 text-amber-600 border-amber-200' : 
+                         o.status === 'DISPATCHED' ? 'bg-blue-50 text-blue-600 border-blue-200' : 
+                         'bg-emerald-50 text-emerald-700 border-emerald-200'}`}
+                     >
+                       {o.status}
+                     </span>
+                     
+                     {/* ACTION BUTTONS WITH COLORFUL GLOW */}
+                     {o.status === 'RECEIVED' && (
+                       <button onClick={() => updateOrderStatus(o._id, 'PACKING')} className="bg-amber-500 text-white px-6 py-2.5 md:py-3 rounded-xl shadow-lg shadow-amber-500/30 text-xs md:text-sm font-black hover:-translate-y-1 hover:bg-amber-600 transition-all w-full md:w-auto cursor-pointer">Start Packing</button>
+                     )}
+                     {o.status === 'PACKING' && (
+                       <button onClick={() => updateOrderStatus(o._id, 'DISPATCHED')} className="bg-blue-500 text-white px-6 py-2.5 md:py-3 rounded-xl shadow-lg shadow-blue-500/30 text-xs md:text-sm font-black hover:-translate-y-1 hover:bg-blue-600 transition-all w-full md:w-auto cursor-pointer">Dispatch Rider</button>
+                     )}
+                     {o.status === 'DISPATCHED' && (
+                       <button onClick={() => updateOrderStatus(o._id, 'DELIVERED')} className="bg-emerald-500 text-white px-6 py-2.5 md:py-3 rounded-xl shadow-lg shadow-emerald-500/30 text-xs md:text-sm font-black hover:-translate-y-1 hover:bg-emerald-600 transition-all w-full md:w-auto cursor-pointer">Mark Delivered</button>
+                     )}
+                  </div>
                 </div>
 
-                <div className="flex flex-wrap md:flex-nowrap items-center gap-3 md:gap-4 mt-2 md:mt-0">
-                   {/* DYNAMIC STATUS BADGE */}
-                   <span className={`font-black tracking-wider text-[10px] md:text-xs px-4 py-2 rounded-xl border w-full md:w-auto text-center shadow-sm uppercase
-                     ${o.status === 'RECEIVED' ? 'bg-rose-50 text-rose-600 border-rose-200' : 
-                       o.status === 'PACKING' ? 'bg-amber-50 text-amber-600 border-amber-200' : 
-                       o.status === 'DISPATCHED' ? 'bg-blue-50 text-blue-600 border-blue-200' : 
-                       'bg-emerald-50 text-emerald-700 border-emerald-200'}`}
-                   >
-                     {o.status}
-                   </span>
-                   
-                   {/* ACTION BUTTONS WITH COLORFUL GLOW */}
-                   {o.status === 'RECEIVED' && (
-                     <button onClick={() => updateOrderStatus(o._id, 'PACKING')} className="bg-amber-500 text-white px-6 py-2.5 md:py-3 rounded-xl shadow-lg shadow-amber-500/30 text-xs md:text-sm font-black hover:-translate-y-1 hover:bg-amber-600 transition-all w-full md:w-auto cursor-pointer">Start Packing</button>
-                   )}
-                   {o.status === 'PACKING' && (
-                     <button onClick={() => updateOrderStatus(o._id, 'DISPATCHED')} className="bg-blue-500 text-white px-6 py-2.5 md:py-3 rounded-xl shadow-lg shadow-blue-500/30 text-xs md:text-sm font-black hover:-translate-y-1 hover:bg-blue-600 transition-all w-full md:w-auto cursor-pointer">Dispatch Rider</button>
-                   )}
-                   {o.status === 'DISPATCHED' && (
-                     <button onClick={() => updateOrderStatus(o._id, 'DELIVERED')} className="bg-emerald-500 text-white px-6 py-2.5 md:py-3 rounded-xl shadow-lg shadow-emerald-500/30 text-xs md:text-sm font-black hover:-translate-y-1 hover:bg-emerald-600 transition-all w-full md:w-auto cursor-pointer">Mark Delivered</button>
-                   )}
-                </div>
+                {/* 🔥 NEW FEATURE: Items Details for Seller to Pack */}
+                {o.items && o.items.length > 0 && (
+                  <div className="mt-2 pt-4 border-t border-dashed border-indigo-100">
+                    <h5 className="text-[10px] font-black text-indigo-400 uppercase tracking-wider mb-3">Items to Pack</h5>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                      {o.items.map((item, idx) => (
+                        <div key={idx} className="flex items-center gap-3 bg-indigo-50/50 p-2.5 rounded-xl border border-indigo-50">
+                          <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center p-1 shadow-sm shrink-0 border border-gray-100">
+                            <img 
+                              src={item.imagePath?.startsWith('http') ? item.imagePath : `${API_URL.replace('/api', '')}/uploads/${item.imagePath}`} 
+                              alt={item.title} 
+                              className="w-full h-full object-contain mix-blend-multiply" 
+                              onError={(e) => e.target.src='https://via.placeholder.com/50'} 
+                            />
+                          </div>
+                          <div className="flex-1">
+                            <h6 className="text-xs font-bold text-gray-800 line-clamp-1">{item.title}</h6>
+                            <p className="text-[10px] font-black text-indigo-600 mt-0.5">Qty: {item.quantity}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
               </div>
             ))}
             
@@ -1687,7 +1716,7 @@ function SellerDashboard({ user, onLogout }) {
 }
 
 /* =========================================
-   PREMIUM ACCOUNT VIEW (FIXED WITH MONGODB _ID)
+   PREMIUM ACCOUNT VIEW (WITH ITEM DETAILS)
 ========================================= */
 function AccountView({ user, onLogout, setView }) {
   const [myOrders, setMyOrders] = useState([]);
@@ -1753,7 +1782,30 @@ function AccountView({ user, onLogout, setView }) {
                   </span>
                 </div>
 
-                <div className="mt-4">
+                {/* 🔥 NAYA PREMIUM ITEM LIST FEATURE YAHAN ADD KIYA HAI */}
+                {o.items && o.items.length > 0 && (
+                  <div className="my-4 bg-gray-50/80 rounded-xl p-3 md:p-4 border border-gray-100">
+                    <h5 className="text-[10px] font-black text-gray-400 uppercase tracking-wider mb-3">Items in this packet</h5>
+                    <div className="space-y-3">
+                      {o.items.map((item, idx) => (
+                        <div key={idx} className="flex items-center gap-3">
+                          <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center p-1 border border-gray-200 shrink-0 shadow-sm">
+                            {/* Images proper render hongi is logic se */}
+                            <img src={getImgSrc(item.imagePath)} alt={item.title} className="w-full h-full object-contain mix-blend-multiply" onError={(e) => e.target.src='https://via.placeholder.com/50'} />
+                          </div>
+                          <div className="flex-1">
+                            <h6 className="text-sm font-bold text-gray-800 line-clamp-1">{item.title}</h6>
+                            <p className="text-[11px] font-bold text-gray-500 mt-0.5">Qty: {item.quantity}</p>
+                          </div>
+                          <span className="text-sm font-black text-gray-900">₹{item.price * item.quantity}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {/* 🔥 END OF ITEM LIST */}
+
+                <div className="mt-4 pt-4 border-t border-gray-100">
                   <div className="flex justify-between text-[10px] md:text-xs font-bold text-gray-400 mb-2">
                     <span className={getProgress(o.status) >= 25 ? 'text-gray-900' : ''}>Placed</span>
                     <span className={getProgress(o.status) >= 50 ? 'text-blue-600' : ''}>Packing</span>
