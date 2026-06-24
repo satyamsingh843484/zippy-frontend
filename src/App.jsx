@@ -242,7 +242,6 @@ export default function App() {
   return (
     <div className="min-h-screen bg-[#fafafa] text-gray-900 font-sans overflow-x-hidden selection:bg-blue-200 selection:text-blue-900 pb-28 md:pb-0 relative z-0">
       {/* ========================================== */}
-      {/* Render the Edit Modal only if a product is selected for editing */}
       {editingProduct && (
         <EditProductModal 
           product={editingProduct} 
@@ -283,7 +282,9 @@ export default function App() {
             <div className="flex items-center gap-1 cursor-pointer hover:scale-105 transition-transform" onClick={() => { if((!user || user.role === 'CUSTOMER')) { setActiveCategory('All'); setView('home'); setSelectedProduct(null); } }}>
               <span className="text-4xl font-black tracking-tighter text-blue-600">zippy</span>
             </div>
-            {user?.role !== 'SELLER' && (
+            
+            {/* 🔥 LEAK FIXED: Only Customers see Location */}
+            {(!user || user.role === 'CUSTOMER') && (
               <div className="flex flex-col border-l border-gray-200 pl-6 cursor-pointer group" onClick={() => setIsChangingLocation(!isChangingLocation)}>
                 <span className="text-xs font-black text-gray-400 uppercase tracking-wider group-hover:text-blue-600 transition flex items-center gap-1">
                   Delivery Location <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" /></svg>
@@ -292,14 +293,15 @@ export default function App() {
               </div>
             )}
           </div>
-          {user?.role !== 'SELLER' && (
+
+          {/* 🔥 LEAK FIXED: Only Customers see Search Bar */}
+          {(!user || user.role === 'CUSTOMER') && (
             <div className="flex-1 max-w-2xl mx-8 relative z-50">
                <div className="w-full flex items-center bg-gray-100/80 rounded-2xl px-5 py-3 border border-transparent focus-within:border-blue-300 focus-within:bg-white focus-within:shadow-[0_4px_20px_rgba(37,99,235,0.1)] transition-all">
                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
                  <input type="text" placeholder="Search for 'Apple', 'Milk'..." value={searchQuery} onChange={handleSearchChange} onFocus={() => searchQuery && setShowSuggestions(true)} onBlur={() => setTimeout(() => setShowSuggestions(false), 200)} className="w-full bg-transparent focus:outline-none ml-3 text-sm font-bold text-gray-800" />
                </div>
                
-               {/* LIVE SUGGESTIONS DROPDOWN */}
                {showSuggestions && searchSuggestions.length > 0 && (
                   <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden py-2 animate-fade-in-up">
                      {searchSuggestions.map(item => (
@@ -320,16 +322,25 @@ export default function App() {
                )}
             </div>
           )}
+
           <div className="flex items-center space-x-8">
             {!user ? (
               <button onClick={() => setIsAuthOpen(true)} className="font-bold text-gray-600 hover:text-blue-600 transition cursor-pointer">Login</button>
             ) : (
-              <div className="flex flex-col items-end cursor-pointer group" onClick={() => user.role !== 'SELLER' ? setView('account') : null} title="Go to Account">
+              // 🔥 LEAK FIXED: Smart Profile Click Routing
+              <div className="flex flex-col items-end cursor-pointer group" onClick={() => {
+                if (user.role === 'ADMIN') setView('admin');
+                else if (user.role === 'PENDING_SELLER') setView('pending');
+                else if (user.role === 'SELLER') setView('seller');
+                else setView('account');
+              }} title="Go to Dashboard">
                 <span className="text-xs font-bold text-gray-500">Welcome,</span>
                 <span className="text-sm font-black text-blue-600 group-hover:text-blue-800 transition flex items-center gap-1">{user.name}</span>
               </div>
             )}
-            {user?.role !== 'SELLER' && (
+
+            {/* 🔥 LEAK FIXED: Only Customers see Cart Button */}
+            {(!user || user.role === 'CUSTOMER') && (
               <button onClick={() => setIsCartOpen(true)} className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-2xl font-black shadow-[0_4px_15px_rgba(37,99,235,0.3)] hover:-translate-y-0.5 transition-all cursor-pointer">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
                 <span>My Cart</span>
@@ -341,7 +352,7 @@ export default function App() {
       </nav>
 
       {/* --- MANUAL LOCATION DRAWER --- */}
-      {isChangingLocation && user?.role !== 'SELLER' && (
+      {isChangingLocation && (!user || user.role === 'CUSTOMER') && (
         <div className="bg-white/80 backdrop-blur-md border-b border-white/50 py-6 px-4 shadow-lg transition-all duration-300 relative z-30">
           <div className="max-w-2xl mx-auto flex flex-col md:flex-row gap-4 items-center">
             <form onSubmit={handleManualLocationSubmit} className="w-full flex gap-3">
@@ -357,13 +368,11 @@ export default function App() {
 
       {/* --- MAIN VIEWS --- */}
       <main className="w-full relative z-10">
-        {view === 'home' && user?.role !== 'SELLER' && <HomeView products={products} addToCart={addToCart} openProduct={openProduct} location={location} setIsChangingLocation={setIsChangingLocation} isLoading={isLoading} user={user} setIsAuthOpen={setIsAuthOpen} setView={setView} activeTheme={activeCategory} setActiveTheme={setActiveCategory} getImgSrc={getImgSrc} searchQuery={searchQuery} handleSearchChange={handleSearchChange} showSuggestions={showSuggestions} searchSuggestions={searchSuggestions} setShowSuggestions={setShowSuggestions} />}
-        {view === 'categories' && user?.role !== 'SELLER' && <CategoriesView setView={setView} setActiveCategory={setActiveCategory} />}
+        {/* 🔥 LEAK FIXED: Main View Routing Strict Protection */}
+        {view === 'home' && (!user || user.role === 'CUSTOMER') && <HomeView products={products} addToCart={addToCart} openProduct={openProduct} location={location} setIsChangingLocation={setIsChangingLocation} isLoading={isLoading} user={user} setIsAuthOpen={setIsAuthOpen} setView={setView} activeTheme={activeCategory} setActiveTheme={setActiveCategory} getImgSrc={getImgSrc} searchQuery={searchQuery} handleSearchChange={handleSearchChange} showSuggestions={showSuggestions} searchSuggestions={searchSuggestions} setShowSuggestions={setShowSuggestions} />}
+        {view === 'categories' && (!user || user.role === 'CUSTOMER') && <CategoriesView setView={setView} setActiveCategory={setActiveCategory} />}
         
-        {/* ========================================== */}
-        {/* 💥 UPDATED PRODUCT DETAIL VIEW ROUTE 💥 */}
-        {/* ========================================== */}
-        {view === 'product' && user?.role !== 'SELLER' && (
+        {view === 'product' && (!user || user.role === 'CUSTOMER') && (
           <ProductDetailView 
             product={selectedProduct} 
             addToCart={addToCart} 
@@ -372,10 +381,10 @@ export default function App() {
             setView={setView} 
           />
         )}
-        {/* ========================================== */}
 
-        {view === 'account' && user?.role !== 'SELLER' && <AccountView user={user} onLogout={handleLogout} setView={setView} />}
-        {view === 'help' && user?.role !== 'SELLER' && <HelpView setView={setView} />}
+        {view === 'account' && (!user || user.role === 'CUSTOMER') && <AccountView user={user} onLogout={handleLogout} setView={setView} />}
+        {view === 'help' && (!user || user.role === 'CUSTOMER') && <HelpView setView={setView} />}
+        
         {view === 'seller' && <SellerDashboard user={user} onLogout={handleLogout} />}
         {view === 'pending' && <PendingApprovalView onLogout={handleLogout} />}
         {view === 'admin' && <AdminDashboardView user={user} onLogout={handleLogout} />}
@@ -385,7 +394,8 @@ export default function App() {
       <Footer />
 
       {/* --- AESTHETIC FLOATING PILL BOTTOM NAVIGATION (MOBILE) --- */}
-      {user?.role !== 'SELLER' && (
+      {/* 🔥 LEAK FIXED: Only Customers see Mobile Bottom Nav */}
+      {(!user || user.role === 'CUSTOMER') && (
         <div className="md:hidden fixed bottom-6 left-5 right-5 bg-white/90 backdrop-blur-2xl border border-white/50 z-50 flex justify-around items-center py-2.5 px-2 rounded-[2rem] shadow-[0_15px_40px_rgba(0,0,0,0.12)]">
            <button onClick={() => setView('home')} className={`flex flex-col items-center gap-1 px-4 py-1 rounded-2xl transition-all ${view === 'home' ? 'text-blue-600' : 'text-gray-400 hover:text-gray-600'}`}>
               <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill={view === 'home' ? 'currentColor' : 'none'} viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
@@ -397,7 +407,6 @@ export default function App() {
               <span className="text-[10px] font-black">Categories</span>
            </button>
 
-           {/* Floating Elevated Cart Button */}
            <button onClick={() => setIsCartOpen(true)} className="relative -mt-10 bg-gradient-to-tr from-blue-600 to-indigo-600 text-white w-14 h-14 rounded-full flex items-center justify-center shadow-[0_10px_25px_rgba(37,99,235,0.4)] border-[4px] border-[#fafafa] cursor-pointer hover:scale-105 transition-transform z-10">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
               {cartItemCount > 0 && <span className="absolute -top-1 -right-1 bg-rose-500 text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full border-2 border-[#fafafa] shadow-sm">{cartItemCount}</span>}
