@@ -34,7 +34,8 @@ export default function App() {
     
     const parsedUser = JSON.parse(savedUser);
     if (parsedUser.role === 'SELLER') return 'seller';
-    if (parsedUser.role === 'PENDING_SELLER') return 'pending'; // 🔥 Naya rule add kiya
+    if (parsedUser.role === 'PENDING_SELLER') return 'pending';
+    if (parsedUser.role === 'ADMIN') return 'admin'; // 🔥 Naya rule add kiya
     return 'home';
   });
 
@@ -150,7 +151,8 @@ export default function App() {
     
     // 🔥 Yahan hum check kar rahe hain ki user kya hai
     if (userData.role === 'SELLER') { setView('seller'); setCart([]); } 
-    else if (userData.role === 'PENDING_SELLER') { setView('pending'); setCart([]); } 
+    else if (userData.role === 'PENDING_SELLER') { setView('pending'); setCart([]); }
+    else if (userData.role === 'ADMIN') { setView('admin'); setCart([]); } 
     else { setView('home'); }
   };
 
@@ -376,6 +378,7 @@ export default function App() {
         {view === 'help' && user?.role !== 'SELLER' && <HelpView setView={setView} />}
         {view === 'seller' && <SellerDashboard user={user} onLogout={handleLogout} />}
         {view === 'pending' && <PendingApprovalView onLogout={handleLogout} />}
+        {view === 'admin' && <AdminDashboardView user={user} onLogout={handleLogout} />}
       </main>
 
       {/* --- YAHAN ADD KIYA HAI NAYA FOOTER --- */}
