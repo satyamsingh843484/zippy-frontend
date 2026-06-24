@@ -1047,7 +1047,7 @@ function EditProductModal({ product, onClose }) {
 }
 
 /* =========================================
-   CART DRAWER (FIXED SMART ID LOGIC)
+   CART DRAWER (MULTI-VENDOR READY)
 ========================================= */
 function CartDrawer({ cart, setCart, user, setIsCartOpen, setIsAuthOpen, addToCart, removeFromCart, startTracking }) {
   const cartTotal = cart.reduce((total, item) => total + (item.price * item.quantity), 0);
@@ -1095,14 +1095,20 @@ function CartDrawer({ cart, setCart, user, setIsCartOpen, setIsAuthOpen, addToCa
           });
 
           if (verifyData.ok) {
-            // 5. Payment successful hone ke BAAD database me order save karo
-            await fetch(`${API_URL}/orders/place?customerName=${user.name}&totalAmount=${finalAmount}`, { method: 'POST' });
+            // 🔥 5. MULTI-VENDOR FIX: Ab hum poora cart array backend ko bhej rahe hain
+            await fetch(`${API_URL}/orders/place`, { 
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                customerName: user.name,
+                totalAmount: finalAmount,
+                cart: cart // <-- Ye backend ko batayega kis seller ka kya item hai
+              })
+            });
 
-            // 👇 Alert hata diya aur naya Live Tracking laga diya 👇
             setCart([]); 
             setIsCartOpen(false);
             startTracking(response.razorpay_payment_id); 
-            // 👆 ========================================== 👆
             
           } else {
             alert("Payment Verification Failed!");
@@ -1148,7 +1154,6 @@ function CartDrawer({ cart, setCart, user, setIsCartOpen, setIsAuthOpen, addToCa
               
               <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                 {cart.map((item, index) => (
-                  // KEY ERROR FIXED HERE 👇
                   <div key={item._id || item.id || index} className={`p-4 flex gap-3 items-center ${index !== cart.length -1 ? 'border-b border-gray-100' : ''}`}>
                     <div className={`w-16 h-16 bg-gray-50 rounded-xl flex items-center justify-center border border-gray-200 ${item.category === 'Cafe' ? 'p-0 overflow-hidden' : 'p-2'}`}>
                        <img 
@@ -1165,7 +1170,6 @@ function CartDrawer({ cart, setCart, user, setIsCartOpen, setIsAuthOpen, addToCa
                       </div>
                     </div>
                     <div className="flex items-center border-2 border-blue-600 rounded-xl bg-white text-blue-600 font-black h-9 overflow-hidden shadow-sm">
-                      {/* INLINE LOGIC REMOVED, SMART FUNCTIONS ADDED HERE 👇 */}
                       <button onClick={() => removeFromCart(item._id || item.id || item.title)} className="px-3 hover:bg-blue-600 hover:text-white transition h-full cursor-pointer">−</button>
                       <span className="px-2 text-xs">{item.quantity}</span>
                       <button onClick={() => addToCart(item)} className="px-3 hover:bg-blue-600 hover:text-white transition h-full cursor-pointer">+</button>
@@ -1414,8 +1418,15 @@ function SellerDashboard({ user, onLogout }) {
   const [editingProduct, setEditingProduct] = useState(null);
 
   const loadData = () => {
-    fetch(`${API_URL}/products/all`).then(res => res.json()).then(data => setProducts(data.filter(p => p.sellerId === user.id)));
-    fetch(`${API_URL}/orders/all`).then(res => res.json()).then(data => setOrders(data.reverse()));
+    // 1. Sirf is seller ke products fetch karo
+    fetch(`${API_URL}/products/all`)
+      .then(res => res.json())
+      .then(data => setProducts(data.filter(p => p.sellerId === user.id)));
+    
+    // 🔥 2. MULTI-VENDOR FIX: Ab sirf is seller ke orders fetch honge!
+    fetch(`${API_URL}/orders/seller/${user.id}`)
+      .then(res => res.json())
+      .then(data => setOrders(data.reverse()));
   };
   
   useEffect(() => { 
