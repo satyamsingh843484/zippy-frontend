@@ -280,7 +280,7 @@ export default function App() {
       <nav className="hidden md:block bg-white/80 backdrop-blur-xl px-4 md:px-8 py-3.5 sticky top-0 z-40 border-b border-gray-200/60 shadow-sm transition-all">
         <div className="flex justify-between items-center max-w-[1400px] mx-auto">
           <div className="flex items-center space-x-8">
-            <div className="flex items-center gap-1 cursor-pointer hover:scale-105 transition-transform" onClick={() => { if(user?.role !== 'SELLER') { setActiveCategory('All'); setView('home'); setSelectedProduct(null); } }}>
+            <div className="flex items-center gap-1 cursor-pointer hover:scale-105 transition-transform" onClick={() => { if((!user || user.role === 'CUSTOMER')) { setActiveCategory('All'); setView('home'); setSelectedProduct(null); } }}>
               <span className="text-4xl font-black tracking-tighter text-blue-600">zippy</span>
             </div>
             {user?.role !== 'SELLER' && (
