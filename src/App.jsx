@@ -30,7 +30,12 @@ export default function App() {
   
   const [view, setView] = useState(() => {
     const savedUser = localStorage.getItem('zippy_user');
-    return savedUser ? (JSON.parse(savedUser).role === 'SELLER' ? 'seller' : 'home') : 'home';
+    if (!savedUser) return 'home';
+    
+    const parsedUser = JSON.parse(savedUser);
+    if (parsedUser.role === 'SELLER') return 'seller';
+    if (parsedUser.role === 'PENDING_SELLER') return 'pending'; // 🔥 Naya rule add kiya
+    return 'home';
   });
 
   const [selectedProduct, setSelectedProduct] = useState(null);
@@ -142,7 +147,10 @@ export default function App() {
     setUser(userData); 
     localStorage.setItem('zippy_user', JSON.stringify(userData));
     setIsAuthOpen(false);
-    if(userData.role === 'SELLER') { setView('seller'); setCart([]); } 
+    
+    // 🔥 Yahan hum check kar rahe hain ki user kya hai
+    if (userData.role === 'SELLER') { setView('seller'); setCart([]); } 
+    else if (userData.role === 'PENDING_SELLER') { setView('pending'); setCart([]); } 
     else { setView('home'); }
   };
 
@@ -367,6 +375,7 @@ export default function App() {
         {view === 'account' && user?.role !== 'SELLER' && <AccountView user={user} onLogout={handleLogout} setView={setView} />}
         {view === 'help' && user?.role !== 'SELLER' && <HelpView setView={setView} />}
         {view === 'seller' && <SellerDashboard user={user} onLogout={handleLogout} />}
+        {view === 'pending' && <PendingApprovalView onLogout={handleLogout} />}
       </main>
 
       {/* --- YAHAN ADD KIYA HAI NAYA FOOTER --- */}
@@ -1258,6 +1267,22 @@ function AuthComponent({ onLogin }) {
         )}
       </div>
     </>
+  );
+}
+
+/* =========================================
+   PENDING APPROVAL VIEW (NAYA CODE YAHAN AAYEGA)
+========================================= */
+function PendingApprovalView({ onLogout }) {
+  return (
+    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
+      <div className="bg-white p-8 rounded-[2rem] shadow-[0_4px_20px_rgba(0,0,0,0.05)] max-w-md w-full text-center border border-gray-100 animate-fade-in-up">
+        <div className="w-24 h-24 bg-yellow-50 text-yellow-500 rounded-full flex items-center justify-center mx-auto mb-6 text-5xl shadow-sm border-4 border-yellow-100/50">⏳</div>
+        <h2 className="text-2xl font-black text-gray-900 mb-4 tracking-tight">Account Under Review</h2>
+        <p className="text-gray-600 mb-8 leading-relaxed text-sm">Welcome to Zippy! Your seller application has been received successfully. Our admin team is reviewing your profile to maintain platform quality. Please check back later.</p>
+        <button onClick={onLogout} className="w-full py-4 bg-gray-900 hover:bg-black text-white rounded-xl font-bold transition-all shadow-md cursor-pointer hover:shadow-lg">Logout & Check Later</button>
+      </div>
+    </div>
   );
 }
 
