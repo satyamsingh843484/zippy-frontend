@@ -1287,6 +1287,110 @@ function PendingApprovalView({ onLogout }) {
 }
 
 /* =========================================
+   GOD MODE: SUPER ADMIN DASHBOARD
+========================================= */
+function AdminDashboardView({ user, onLogout }) {
+  const [pendingSellers, setPendingSellers] = useState([]);
+
+  // Backend se pending sellers mangwa rahe hain
+  const fetchPendingSellers = async () => {
+    try {
+      const res = await fetch(`${API_URL}/admin/pending-sellers`);
+      const data = await res.json();
+      setPendingSellers(data);
+    } catch (err) {
+      console.error("Error fetching sellers:", err);
+    }
+  };
+
+  useEffect(() => {
+    fetchPendingSellers();
+  }, []);
+
+  // Approve button ka function
+  const handleApprove = async (sellerId) => {
+    const isConfirmed = window.confirm("Are you sure you want to approve this seller?");
+    if (!isConfirmed) return;
+
+    try {
+      const res = await fetch(`${API_URL}/admin/approve-seller/${sellerId}`, { 
+        method: 'PUT' 
+      });
+      
+      if (res.ok) {
+        alert("Seller Approved Successfully! 🚀");
+        // Screen se us seller ko turant hata do
+        setPendingSellers(pendingSellers.filter(s => s._id !== sellerId));
+      } else {
+        alert("Something went wrong!");
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50 pb-20 relative z-10 selection:bg-blue-200">
+      <div className="max-w-[1200px] mx-auto py-10 px-4 animate-fade-in-up">
+        
+        {/* Header */}
+        <div className="bg-gray-900 rounded-[2rem] p-8 flex flex-col md:flex-row justify-between items-center shadow-2xl mb-8">
+          <div className="flex items-center gap-4">
+            <div className="w-16 h-16 bg-blue-500 rounded-2xl flex items-center justify-center text-3xl shadow-lg">👑</div>
+            <div>
+              <h1 className="text-3xl font-black text-white tracking-tight">Admin Control Center</h1>
+              <p className="text-gray-400 font-bold mt-1">Manage Zippy Platform</p>
+            </div>
+          </div>
+          <button onClick={onLogout} className="mt-4 md:mt-0 bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-xl font-bold transition-all shadow-md cursor-pointer">
+            Admin Logout
+          </button>
+        </div>
+
+        {/* Pending Requests Section */}
+        <div className="bg-white rounded-[2rem] shadow-sm border border-gray-200 overflow-hidden">
+          <div className="bg-white border-b border-gray-100 px-8 py-6 flex items-center justify-between">
+            <h2 className="text-xl font-black text-gray-900 flex items-center gap-2">
+              Pending Seller Requests 
+              <span className="bg-yellow-100 text-yellow-700 text-xs px-3 py-1 rounded-full">{pendingSellers.length}</span>
+            </h2>
+          </div>
+
+          <div className="p-8">
+            {pendingSellers.length === 0 ? (
+              <div className="text-center py-10">
+                <span className="text-6xl opacity-30 mb-4 block">☕</span>
+                <h3 className="text-xl font-bold text-gray-800">No pending requests.</h3>
+                <p className="text-gray-500">Your platform is all caught up!</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {pendingSellers.map((seller) => (
+                  <div key={seller._id} className="bg-white border-2 border-gray-100 rounded-2xl p-6 shadow-sm hover:shadow-lg transition-all flex flex-col">
+                    <div className="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center text-2xl font-black text-gray-400 mb-4 uppercase">
+                      {seller.name.charAt(0)}
+                    </div>
+                    <h3 className="font-black text-xl text-gray-900">{seller.name}</h3>
+                    <p className="text-gray-500 font-bold text-sm mb-6">{seller.email}</p>
+                    
+                    <button 
+                      onClick={() => handleApprove(seller._id)} 
+                      className="mt-auto w-full bg-green-500 hover:bg-green-600 text-white font-black py-3 rounded-xl shadow-md shadow-green-500/20 hover:-translate-y-1 transition-all cursor-pointer"
+                    >
+                      Approve Seller
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* =========================================
    OP LEVEL SELLER DASHBOARD (ULTRA PREMIUM)
 ========================================= */
 function SellerDashboard({ user, onLogout }) {
