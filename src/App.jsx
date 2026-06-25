@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { io } from 'socket.io-client'; // <--- YAHAN ADD HOGA IMPORT
+import { io } from 'socket.io-client';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css'; // <--- YAHAN ADD HOGA IMPORT
 const HOST = window.location.hostname;
 const API_URL = `https://zippy-backend-vc4w.onrender.com/api`;
 const socket = io(`https://zippy-backend-vc4w.onrender.com`); // <--- YAHAN ADD HOGA SOCKET CONNECTION
@@ -1947,14 +1949,12 @@ function Footer({ setView, currentView = 'home' }) {
   const handlePageChange = (targetView, linkName) => {
     setActiveLink(targetView);
     
-    // Smooth transition effect
     const footer = document.querySelector('footer');
     footer.style.opacity = '0.7';
     footer.style.transform = 'scale(0.98)';
     
     setTimeout(() => {
       setView(targetView);
-      // Scroll to top smoothly
       window.scrollTo({ top: 0, behavior: 'smooth' });
       
       setTimeout(() => {
@@ -1962,6 +1962,70 @@ function Footer({ setView, currentView = 'home' }) {
         footer.style.transform = 'scale(1)';
       }, 100);
     }, 200);
+  };
+
+  // 🔥 PREMIUM TOAST NOTIFICATION
+  const showSuccessToast = (email) => {
+    toast.success(
+      <div className="flex flex-col gap-1">
+        <div className="flex items-center gap-2">
+          <span className="text-2xl">🎉</span>
+          <span className="font-bold text-[15px]">Thanks for subscribing!</span>
+        </div>
+        <p className="text-[13px] text-gray-600">
+          We'll keep you updated at <span className="font-semibold text-blue-600">{email}</span>
+        </p>
+        <p className="text-[12px] text-green-600 font-medium mt-1">
+          ✅ Check your inbox for confirmation
+        </p>
+      </div>,
+      {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+        style: {
+          borderRadius: '16px',
+          boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
+          padding: '16px 24px',
+          border: '1px solid rgba(0,0,0,0.05)',
+          background: 'white',
+        }
+      }
+    );
+  };
+
+  const showErrorToast = (message) => {
+    toast.error(
+      <div className="flex flex-col gap-1">
+        <div className="flex items-center gap-2">
+          <span className="text-2xl">❌</span>
+          <span className="font-bold text-[15px]">Subscription Failed</span>
+        </div>
+        <p className="text-[13px] text-gray-600">{message || 'Please try again!'}</p>
+      </div>,
+      {
+        position: "top-right",
+        autoClose: 4000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+        style: {
+          borderRadius: '16px',
+          boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
+          padding: '16px 24px',
+          border: '1px solid rgba(255,0,0,0.1)',
+          background: 'white',
+        }
+      }
+    );
   };
 
   // Handle subscribe with loading state
@@ -1978,155 +2042,51 @@ function Footer({ setView, currentView = 'home' }) {
       });
 
       if (res.ok) {
-        alert("🎉 Thanks for subscribing to Zippy! We'll keep you updated. 🚀");
+        showSuccessToast(emailInput);
         e.target.reset();
       } else {
         const data = await res.json();
-        alert(data.message || "❌ Failed to subscribe. Try again!");
+        showErrorToast(data.message || "Failed to subscribe. Try again!");
       }
     } catch (error) {
-      alert("⚠️ Server error! Are you connected to the internet?");
+      showErrorToast("Server error! Are you connected to the internet?");
     } finally {
       setIsSubscribing(false);
     }
   };
 
   return (
-    <footer 
-      className="w-full bg-[#fcfcfc] pt-16 pb-8 border-t border-gray-100 transition-all duration-500"
-      style={{ 
-        opacity: 1, 
-        transform: 'scale(1)',
-        transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
-      }}
-    >
-      <div className="max-w-[1200px] mx-auto px-6 md:px-8">
-        
-        <div className="flex flex-col md:flex-row justify-between items-start gap-10 mb-16">
-          
-          {/* BRANDING SECTION */}
-          <div className="flex-1">
-            <h1 className="text-[46px] font-black tracking-tighter text-[#adb5bd] leading-none mb-3 lowercase transition-colors duration-300">
-              zippy
-            </h1>
-            <p 
-              className="text-[14px] md:text-[16px] font-medium text-[#7a8089] flex items-center justify-start tracking-tight transition-colors duration-300"
-              style={{ fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' }}
-            >
-              Crafted with 
-              <svg viewBox="0 0 24 24" fill="currentColor" className="w-[15px] h-[15px] md:w-[17px] md:h-[17px] mx-1 text-[#005af0] transition-all duration-300 hover:scale-125 hover:rotate-12">
-                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
-              </svg>
-              in Patna, India
-            </p>
-            <p className="text-[13px] text-[#9aa0a9] tracking-wide font-light transition-colors duration-300">
-              ☕ Freshly Brewed • Every Day
-            </p>
-          </div>
-
-          {/* QUICK LINKS SECTION */}
-          <div className="flex-1">
-            <h4 className="font-black text-[#a1a1aa] mb-5 uppercase tracking-widest text-[11px] transition-colors duration-300">
-              Quick Links
-            </h4>
-            <ul className="space-y-3">
-              {quickLinks.map((link) => (
-                <li key={link.name}>
-                  <button 
-                    onClick={() => handlePageChange(link.targetView, link.name)}
-                    className={`text-[14px] font-bold text-[#6b7280] transition-all duration-300 cursor-pointer bg-transparent border-none p-0 text-left group flex items-center gap-2 ${
-                      activeLink === link.targetView ? 'text-[#005af0] scale-105' : ''
-                    }`}
-                  >
-                    <span className="group-hover:translate-x-2 transition-transform duration-300">
-                      {link.name}
-                    </span>
-                    {activeLink === link.targetView && (
-                      <span className="w-2 h-2 bg-[#005af0] rounded-full animate-pulse"></span>
-                    )}
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* CONNECT WITH US & SUBSCRIBE SECTION */}
-          <div className="flex-[1.5]">
-            <h4 className="font-black text-[#a1a1aa] mb-5 uppercase tracking-widest text-[11px] transition-colors duration-300">
-              Connect With Us
-            </h4>
-            
-            <div className="flex gap-3 mb-6">
-              {/* INSTAGRAM */}
-              <a href="https://www.instagram.com/_s.a.t.y.a.m.m_/" target="_blank" rel="noreferrer" 
-                className="w-10 h-10 bg-[#f3f4f6] text-[#6b7280] rounded-full flex items-center justify-center hover:bg-gradient-to-tr hover:from-yellow-400 hover:via-pink-500 hover:to-purple-600 hover:text-white hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
-                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
-              </a>
-              {/* FACEBOOK */}
-              <a href="https://facebook.com/your_id" target="_blank" rel="noreferrer" 
-                className="w-10 h-10 bg-[#f3f4f6] text-[#6b7280] rounded-full flex items-center justify-center hover:bg-blue-600 hover:text-white hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
-                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M22.675 0h-21.35C.598 0 0 .598 0 1.325v21.351C0 23.402.598 24 1.325 24H12.82v-9.294H9.692v-3.622h3.128V8.413c0-3.1 1.893-4.788 4.659-4.788 1.325 0 2.463.099 2.795.143v3.24l-1.918.001c-1.504 0-1.795.715-1.795 1.763v2.313h3.587l-.467 3.622h-3.12V24h6.116c.73 0 1.323-.598 1.323-1.325V1.325C24 .598 23.402 0 22.675 0z"/></svg>
-              </a>
-              {/* X (Twitter) */}
-              <a href="https://twitter.com/your_id" target="_blank" rel="noreferrer" 
-                className="w-10 h-10 bg-[#f3f4f6] text-[#6b7280] rounded-full flex items-center justify-center hover:bg-black hover:text-white hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
-                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-              </a>
-              {/* YOUTUBE */}
-              <a href="https://www.youtube.com/channel/UC27JTGeeqX4ZxROqmyuhypQ/posts?pvf=CAI%253D" target="_blank" rel="noreferrer" 
-                className="w-10 h-10 bg-[#f3f4f6] text-[#6b7280] rounded-full flex items-center justify-center hover:bg-red-600 hover:text-white hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
-                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
-              </a>
-            </div>
-
-            <p className="text-[13px] font-bold text-[#6b7280] mb-3 transition-colors duration-300">
-              Subscribe for fresh updates ☕
-            </p>
-            
-            <form className="flex gap-2 w-full max-w-[380px]" onSubmit={handleSubscribe}>
-              <input 
-                type="email" 
-                required 
-                placeholder="Your email" 
-                className="flex-1 bg-white border border-gray-200 px-5 py-2.5 rounded-[2rem] text-sm font-bold text-gray-800 focus:outline-none focus:border-[#005af0] focus:ring-2 focus:ring-[#005af0]/20 transition-all duration-300 shadow-sm placeholder-gray-400"
-              />
-              <button 
-                type="submit" 
-                disabled={isSubscribing}
-                className="bg-[#005af0] text-white font-black px-7 py-2.5 rounded-[2rem] text-sm hover:bg-blue-700 hover:shadow-lg hover:-translate-y-0.5 active:scale-95 transition-all duration-300 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 min-w-[120px] justify-center"
-              >
-                {isSubscribing ? (
-                  <>
-                    <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Loading...
-                  </>
-                ) : 'Subscribe'}
-              </button>
-            </form>
-          </div>
-
-        </div>
-
-        {/* BOTTOM LEGAL BAR */}
-        <div className="pt-6 border-t border-gray-200 flex flex-col md:flex-row justify-between items-center gap-4 text-[12px] font-bold text-[#9ca3af] transition-colors duration-300">
-          <p>© 2026 Zippy Cafe. All rights reserved.</p>
-          <div className="flex gap-6">
-            <a href="#" onClick={(e) => e.preventDefault()} className="hover:text-gray-800 transition-colors">
-              Privacy Policy
-            </a>
-            <a href="#" onClick={(e) => e.preventDefault()} className="hover:text-gray-800 transition-colors">
-              Terms of Service
-            </a>
-            <a href="#" onClick={(e) => e.preventDefault()} className="hover:text-gray-800 transition-colors">
-              Cookie Policy
-            </a>
-          </div>
-        </div>
-        
-      </div>
-    </footer>
+    <>
+      {/* Toast Container - Premium Styled */}
+      <ToastContainer
+        position="top-right"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+        toastStyle={{
+          borderRadius: '16px',
+          boxShadow: '0 20px 60px rgba(0,0,0,0.12)',
+          border: 'none',
+        }}
+      />
+      
+      <footer 
+        className="w-full bg-[#fcfcfc] pt-16 pb-8 border-t border-gray-100 transition-all duration-500"
+        style={{ 
+          opacity: 1, 
+          transform: 'scale(1)',
+          transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
+        }}
+      >
+        {/* ... REST OF YOUR FOOTER CODE (same as before) ... */}
+        {/* Bas yahan tak footer ka code aayega */}
+      </footer>
+    </>
   );
 }
