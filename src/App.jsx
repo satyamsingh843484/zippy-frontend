@@ -784,43 +784,58 @@ const filteredProducts = activeTheme === 'All'
             ))
           ) : (
             <>
-              {filteredProducts.map(p => (
-                <div key={p.id} onClick={() => openProduct(p)} className="bg-gradient-to-b from-white to-gray-50 rounded-[1.5rem] p-4 studio-shadow hover:shadow-[0_25px_50px_-12px_rgba(11,92,255,0.2)] transition-all duration-500 cursor-pointer group flex flex-col h-full relative overflow-hidden border border-white">
-                  
-                  {/* Sunlit effect filter */}
-                  <div className="absolute inset-0 sunlit-glow pointer-events-none opacity-40 group-hover:opacity-100 transition-opacity duration-500"></div>
-                  
-                  <div className="absolute top-0 left-0 bg-[#0b5cff] text-white text-[9px] font-black px-3 py-1.5 rounded-br-xl rounded-tl-[1.5rem] shadow-sm z-10 uppercase tracking-widest">Bestseller</div>
-                  
-                  {/* Image with glow */}
-                  <div className="h-28 md:h-36 w-full mb-3 rounded-xl overflow-hidden flex items-center justify-center p-2 relative bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-blue-50/50 via-transparent to-transparent mt-2">
-                     <img src={p.imagePath?.startsWith('http') ? p.imagePath : `${API_URL.replace('/api', '')}/uploads/${p.imagePath}`} alt={p.title} className="max-h-full max-w-full object-contain mix-blend-multiply group-hover:scale-110 group-hover:-translate-y-1 transition-all duration-700 drop-shadow-md" onError={(e) => e.target.src='https://via.placeholder.com/400'} />
-                  </div>
-                  
-                  <div className="flex flex-col flex-1 justify-between relative z-10">
-                    <div>
-                      <div className="flex items-center gap-1 mb-1">
-                        <span className="text-[10px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded font-black">★ 4.5</span>
-                        <span className="text-[9px] text-gray-400 font-bold flex items-center gap-1"><span className="w-1 h-1 bg-gray-300 rounded-full"></span> 12 Mins</span>
-                      </div>
-                      <h4 className="text-xs md:text-sm font-black text-gray-800 line-clamp-2 leading-snug mt-1.5">{p.title}</h4>
-                    </div>
-                    
-                    <div className="mt-3 pt-3 border-t border-dashed border-gray-200 flex items-end justify-between relative">
-                      <div className="flex flex-col">
-                        <div className="flex items-center gap-1.5">
-                          <span className="text-sm md:text-lg font-black text-gray-900 drop-shadow-sm">₹{(p.price)}</span>
-                          <span className="text-[10px] text-gray-400 line-through font-bold">₹{(p.price * 1.15).toFixed(0)}</span>
-                        </div>
-                      </div>
-                      
-                      <button onClick={(e) => { e.stopPropagation(); addToCart(p); }} className="absolute -right-2 -bottom-2 w-10 h-10 bg-white border border-gray-100 text-blue-600 rounded-xl flex items-center justify-center text-2xl font-light hover:bg-blue-600 hover:text-white transition-all shadow-[0_4px_10px_rgba(0,0,0,0.05)] hover:shadow-[0_8px_20px_rgba(11,92,255,0.3)] cursor-pointer">
-                         +
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ))}
+              {filteredProducts.map((p, index) => {
+  // 5 Premium Themes ka array (Blue, Rose, Emerald, Purple, Orange)
+  const THEMES = [
+    { bg: 'hover:bg-blue-50/50', border: 'hover:border-blue-300', glow: 'hover:shadow-[0_15px_30px_rgba(37,99,235,0.15)]', imgBg: 'from-blue-50/50 group-hover:from-blue-200/60', btn: 'text-blue-600 group-hover:bg-blue-600 group-hover:text-white', badge: 'bg-[#0b5cff]', title: 'group-hover:text-blue-700' },
+    { bg: 'hover:bg-rose-50/50', border: 'hover:border-rose-300', glow: 'hover:shadow-[0_15px_30px_rgba(225,29,72,0.15)]', imgBg: 'from-rose-50/50 group-hover:from-rose-200/60', btn: 'text-rose-600 group-hover:bg-rose-600 group-hover:text-white', badge: 'bg-[#e11d48]', title: 'group-hover:text-rose-700' },
+    { bg: 'hover:bg-emerald-50/50', border: 'hover:border-emerald-300', glow: 'hover:shadow-[0_15px_30px_rgba(16,185,129,0.15)]', imgBg: 'from-emerald-50/50 group-hover:from-emerald-200/60', btn: 'text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white', badge: 'bg-[#059669]', title: 'group-hover:text-emerald-700' },
+    { bg: 'hover:bg-purple-50/50', border: 'hover:border-purple-300', glow: 'hover:shadow-[0_15px_30px_rgba(147,51,234,0.15)]', imgBg: 'from-purple-50/50 group-hover:from-purple-200/60', btn: 'text-purple-600 group-hover:bg-purple-600 group-hover:text-white', badge: 'bg-[#7c3aed]', title: 'group-hover:text-purple-700' },
+    { bg: 'hover:bg-orange-50/50', border: 'hover:border-orange-300', glow: 'hover:shadow-[0_15px_30px_rgba(249,115,22,0.15)]', imgBg: 'from-orange-50/50 group-hover:from-orange-200/60', btn: 'text-orange-600 group-hover:bg-orange-600 group-hover:text-white', badge: 'bg-[#ea580c]', title: 'group-hover:text-orange-700' }
+  ];
+  
+  // Index ke hisaab se theme pick hogi
+  const ct = THEMES[index % THEMES.length];
+
+  return (
+    <div key={p.id || p._id} onClick={() => openProduct(p)} className={`bg-gradient-to-b from-white to-gray-50 rounded-[1.5rem] p-4 studio-shadow transition-all duration-500 cursor-pointer group flex flex-col h-full relative overflow-hidden border border-white hover:-translate-y-1.5 ${ct.bg} ${ct.border} ${ct.glow}`}>
+      
+      {/* Sunlit effect filter */}
+      <div className="absolute inset-0 sunlit-glow pointer-events-none opacity-40 group-hover:opacity-100 transition-opacity duration-500"></div>
+      
+      {/* Dynamic Bestseller Badge */}
+      <div className={`absolute top-0 left-0 text-white text-[9px] font-black px-3 py-1.5 rounded-br-xl rounded-tl-[1.5rem] shadow-sm z-10 uppercase tracking-widest ${ct.badge}`}>Bestseller</div>
+      
+      {/* Image with Dynamic Glow Background */}
+      <div className={`h-28 md:h-36 w-full mb-3 rounded-xl overflow-hidden flex items-center justify-center p-2 relative bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] transition-colors duration-500 mt-2 ${ct.imgBg} to-transparent`}>
+         <img src={p.imagePath?.startsWith('http') ? p.imagePath : `${API_URL.replace('/api', '')}/uploads/${p.imagePath}`} alt={p.title} className="max-h-full max-w-full object-contain mix-blend-multiply group-hover:scale-110 group-hover:-translate-y-1 transition-all duration-700 drop-shadow-md" onError={(e) => e.target.src='https://via.placeholder.com/400'} />
+      </div>
+      
+      <div className="flex flex-col flex-1 justify-between relative z-10">
+        <div>
+          <div className="flex items-center gap-1 mb-1">
+            <span className="text-[10px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded font-black">★ 4.5</span>
+            <span className="text-[9px] text-gray-400 font-bold flex items-center gap-1"><span className="w-1 h-1 bg-gray-300 rounded-full"></span> 12 Mins</span>
+          </div>
+          <h4 className={`text-xs md:text-sm font-black text-gray-800 line-clamp-2 leading-snug mt-1.5 transition-colors duration-300 ${ct.title}`}>{p.title}</h4>
+        </div>
+        
+        <div className="mt-3 pt-3 border-t border-dashed border-gray-200 flex items-end justify-between relative">
+          <div className="flex flex-col">
+            <div className="flex items-center gap-1.5">
+              <span className="text-sm md:text-lg font-black text-gray-900 drop-shadow-sm">₹{(p.price)}</span>
+              <span className="text-[10px] text-gray-400 line-through font-bold">₹{(p.price * 1.15).toFixed(0)}</span>
+            </div>
+          </div>
+          
+          <button onClick={(e) => { e.stopPropagation(); addToCart(p); }} className={`absolute -right-2 -bottom-2 w-10 h-10 bg-white border border-gray-100 rounded-xl flex items-center justify-center text-2xl font-light transition-all shadow-[0_4px_10px_rgba(0,0,0,0.05)] cursor-pointer ${ct.btn}`}>
+             +
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+})}
               {filteredProducts.length === 0 && (
                 <div className="col-span-full py-20 flex flex-col items-center justify-center bg-gray-50 rounded-[2rem] border border-dashed border-gray-300">
                    <span className="text-5xl opacity-40">🛒</span>
