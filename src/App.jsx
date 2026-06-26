@@ -673,29 +673,109 @@ const filteredProducts = activeTheme === 'All'
         </div>
 
         <div className="max-w-[1400px] mx-auto">
-           {/* CATEGORY NAV */}
-           <div className="flex overflow-x-auto hide-scroll gap-6 md:gap-8 px-4 md:px-8 pt-3 md:pt-6 border-b border-white/20">
-              {Object.values(THEMES).map((tab) => (
-                 <div key={tab.label} onClick={() => setActiveTheme(tab.label)} className="flex flex-col items-center cursor-pointer min-w-max relative pb-3 group">
-                    <span className={`text-2xl mb-1 transition-transform duration-300 ${activeTheme === tab.label ? 'scale-125 drop-shadow-md' : 'opacity-80 group-hover:opacity-100 group-hover:scale-110'}`}>
-                      {tab.icon}
-                    </span>
-                    <span className={`text-[11px] md:text-sm font-black transition-all mt-1 ${activeTheme === tab.label ? 'text-white drop-shadow-sm' : 'text-white/70 group-hover:text-white'}`}>
-                      {tab.label}
-                    </span>
-                    {activeTheme === tab.label && (
-                       <div className="absolute bottom-0 w-full h-1 bg-white rounded-t-md shadow-[0_0_10px_rgba(255,255,255,0.8)]"></div>
-                    )}
-                 </div>
-              ))}
-           </div>
+           {/* ===== CATEGORY NAV - PREMIUM ===== */}
+<div className="flex overflow-x-auto hide-scroll gap-4 md:gap-6 px-4 md:px-8 pt-3 md:pt-6 border-b border-white/20 pb-1">
+  {Object.values(THEMES).map((tab) => (
+    <div 
+      key={tab.label} 
+      onClick={() => setActiveTheme(tab.label)} 
+      className="flex flex-col items-center cursor-pointer min-w-max relative pb-3 group"
+    >
+      {/* Icon with Glow Effect */}
+      <div className={`relative transition-all duration-500 ${
+        activeTheme === tab.label 
+          ? 'scale-125 drop-shadow-[0_0_20px_rgba(255,255,255,0.5)]' 
+          : 'opacity-70 group-hover:opacity-100 group-hover:scale-110'
+      }`}>
+        <span className="text-2xl md:text-3xl">
+          {tab.icon}
+        </span>
+        {/* Glow Ring */}
+        {activeTheme === tab.label && (
+          <div className="absolute inset-0 rounded-full bg-white/20 blur-xl scale-150 -z-10 animate-pulse"></div>
+        )}
+      </div>
+      
+      <span className={`text-[10px] md:text-sm font-black transition-all duration-300 mt-1.5 tracking-wide ${
+        activeTheme === tab.label 
+          ? 'text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.6)] scale-105' 
+          : 'text-white/60 group-hover:text-white/90'
+      }`}>
+        {tab.label}
+      </span>
+      
+      {/* Active Indicator - Premium Gradient */}
+      {activeTheme === tab.label && (
+        <div className="absolute bottom-0 w-10 h-1 bg-gradient-to-r from-yellow-400 via-orange-400 to-pink-400 rounded-full shadow-[0_0_20px_rgba(255,200,0,0.6)] animate-pulse"></div>
+      )}
+    </div>
+  ))}
+</div>
 
-           <div className="px-4 md:px-8 py-5 md:py-8 flex justify-between items-center relative overflow-hidden">
-              <div className="absolute right-[-20px] top-[-10px] opacity-10 text-[120px] transform rotate-12 pointer-events-none">⚡</div>
-              <h2 className="text-[32px] md:text-5xl font-black italic transform -skew-x-[15deg] text-yellow-300 drop-shadow-[0_4px_4px_rgba(0,0,0,0.3)] leading-none ml-2">
-                 ⭐ ZIPPY <br className="md:hidden"/> <span className="text-white">SUPER SALE</span> <span className="text-2xl md:text-4xl">🔥</span>
-              </h2>
-           </div>
+{/* ===== SUPER SALE BANNER - PREMIUM ===== */}
+<div className="relative mx-4 md:mx-8 mt-4 md:mt-6 mb-6 md:mb-8 overflow-hidden rounded-2xl md:rounded-3xl">
+  
+  {/* Animated Background Gradient */}
+  <div className="absolute inset-0 bg-gradient-to-r from-[#1a1a2e] via-[#16213e] to-[#0f3460]"></div>
+  
+  {/* Floating Animated Orbs */}
+  <div className="absolute inset-0 overflow-hidden">
+    <div className="absolute -top-20 -left-20 w-64 h-64 bg-yellow-400/20 rounded-full blur-3xl animate-pulse"></div>
+    <div className="absolute -bottom-20 -right-20 w-64 h-64 bg-blue-500/20 rounded-full blur-3xl animate-pulse delay-700"></div>
+    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-purple-500/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
+  </div>
+  
+  {/* Lightning Bolt Decoration */}
+  <div className="absolute right-[-10px] md:right-[-20px] top-[-20px] md:top-[-10px] opacity-5 text-[150px] md:text-[200px] transform rotate-12 pointer-events-none select-none">
+    ⚡
+  </div>
+  
+  {/* Main Content */}
+  <div className="relative z-10 px-5 md:px-10 py-6 md:py-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+    
+    {/* Left Side - Title */}
+    <div className="flex-1">
+      <div className="flex items-center gap-2 mb-1">
+        <span className="inline-flex items-center gap-1.5 bg-yellow-400/20 backdrop-blur-sm px-3 py-1 rounded-full border border-yellow-400/30">
+          <span className="w-1.5 h-1.5 bg-yellow-400 rounded-full animate-ping"></span>
+          <span className="text-[10px] font-bold text-yellow-300 uppercase tracking-wider">Limited Time</span>
+        </span>
+      </div>
+      
+      <h2 className="text-3xl md:text-5xl font-black italic transform -skew-x-[8deg] md:-skew-x-[12deg] leading-[1.1]">
+        <span className="text-yellow-300 drop-shadow-[0_4px_20px_rgba(255,200,0,0.3)]">⭐ ZIPPY</span>
+        <br className="md:hidden"/>
+        <span className="text-white drop-shadow-[0_4px_20px_rgba(255,255,255,0.2)]">SUPER SALE</span>
+        <span className="text-2xl md:text-4xl ml-1 md:ml-2 inline-block animate-bounce">🔥</span>
+      </h2>
+      
+      <p className="text-white/60 text-xs md:text-sm font-medium mt-1 md:mt-2 tracking-wide">
+        Up to 50% off on thousands of items • Grab now!
+      </p>
+    </div>
+    
+    {/* Right Side - Timer */}
+    <div className="flex gap-2 md:gap-3 flex-shrink-0">
+      <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl px-3 md:px-5 py-2 md:py-3 text-center border border-white/10 min-w-[50px] md:min-w-[70px]">
+        <p className="text-xl md:text-2xl font-black text-white tabular-nums">12</p>
+        <p className="text-[8px] md:text-[10px] text-white/50 font-bold uppercase tracking-wider">Hours</p>
+      </div>
+      <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl px-3 md:px-5 py-2 md:py-3 text-center border border-white/10 min-w-[50px] md:min-w-[70px]">
+        <p className="text-xl md:text-2xl font-black text-white tabular-nums">45</p>
+        <p className="text-[8px] md:text-[10px] text-white/50 font-bold uppercase tracking-wider">Mins</p>
+      </div>
+      <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl px-3 md:px-5 py-2 md:py-3 text-center border border-white/10 min-w-[50px] md:min-w-[70px]">
+        <p className="text-xl md:text-2xl font-black text-white tabular-nums">30</p>
+        <p className="text-[8px] md:text-[10px] text-white/50 font-bold uppercase tracking-wider">Secs</p>
+      </div>
+    </div>
+    
+  </div>
+  
+  {/* Bottom Glow Line */}
+  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-yellow-400/50 to-transparent"></div>
+  
+</div>
 
            {/* UNIFORM EDGE-TO-EDGE BANNERS */}
            <div className="w-full pb-6 md:pb-10">
