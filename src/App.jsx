@@ -1090,39 +1090,46 @@ function EditProductModal({ product, onClose }) {
 }
 
 /* =========================================
-   CART DRAWER (WITH REAL SCRATCH CARD GAMIFICATION)
+   CART DRAWER (SMART DYNAMIC SCRATCH CARD)
 ========================================= */
 function CartDrawer({ cart, setCart, user, setIsCartOpen, setIsAuthOpen, addToCart, removeFromCart, startTracking }) {
   const cartTotal = cart.reduce((total, item) => total + (item.price * item.quantity), 0);
   const inrTotal = parseFloat((cartTotal).toFixed(2));
   const saved = (cartTotal * 0.15).toFixed(2); 
 
-  // 🔥 GAMIFICATION STATES 🔥
   const [scratched, setScratched] = useState(false);
   const [winAmount, setWinAmount] = useState(0);
   const [discount, setDiscount] = useState(0);
 
-  // Generate a random win amount between ₹10 to ₹50 when cart opens
   useEffect(() => {
     if (!scratched) {
-      const luckyAmount = Math.floor(Math.random() * (50 - 10 + 1)) + 10;
+      // 🔥 BUG FIX: SMART BUSINESS LOGIC 🔥
+      // Max win amount ya toh ₹50 hoga, ya Cart ka Total (agar cart 50 se kam hai).
+      const maxWin = Math.min(50, Math.floor(inrTotal));
+      
+      // Amount 1 se maxWin ke beech generate hoga. Agar cart 0 hai to 0.
+      const luckyAmount = maxWin > 0 ? Math.floor(Math.random() * maxWin) + 1 : 0;
       setWinAmount(luckyAmount);
     }
-  }, [scratched]);
+  }, [scratched]); // Yeh logic cart open hone pe sirf 1 baar set hoga
 
   const handleScratch = () => {
     setScratched(true);
     setDiscount(winAmount);
   };
 
-  // Asli Math yahan ho raha hai (Total + Delivery - Scratch Discount)
+  // Safety Feature: Agar user scratch karne ke BAAD koi item cart se hata de 
+  // aur cart ka total discount se chhota ho jaye, tabhi hum discount adjust karenge.
+  const actualDiscount = scratched ? Math.min(discount, inrTotal) : 0;
+  
   const deliveryFee = 2;
-  const rawFinalAmount = inrTotal + deliveryFee - discount;
-  const finalAmount = rawFinalAmount < 0 ? 0 : rawFinalAmount; // Bill kabhi negative na ho
+  const finalAmount = parseFloat((inrTotal - actualDiscount + deliveryFee).toFixed(2)); 
 
   const handleCheckout = async () => {
     if(!user) { setIsCartOpen(false); setIsAuthOpen(true); return; }
     
+    if (finalAmount <= 0) { alert("Invalid order amount."); return; }
+
     const res = await loadRazorpayScript();
     if (!res) { alert("Razorpay SDK failed to load. Are you online?"); return; }
 
@@ -1130,7 +1137,7 @@ function CartDrawer({ cart, setCart, user, setIsCartOpen, setIsAuthOpen, addToCa
       const orderData = await fetch(`${API_URL}/payment/create-order`, { 
         method: 'POST', 
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount: finalAmount }) // 🔥 Discounted amount goes to Razorpay
+        body: JSON.stringify({ amount: finalAmount }) 
       }).then((t) => t.json());
 
       if (!orderData || !orderData.id) { alert("Server error! Cannot start payment."); return; }
@@ -1140,7 +1147,7 @@ function CartDrawer({ cart, setCart, user, setIsCartOpen, setIsAuthOpen, addToCa
         amount: orderData.amount,
         currency: orderData.currency,
         name: "Zippy Groceries",
-        description: `Order total after ₹${discount} Scratch Discount`, // Razorpay par bhi dikhega
+        description: `Order total after ₹${actualDiscount} Scratch Discount`, 
         image: "https://images.unsplash.com/photo-1542838132-92c53300491e?w=100", 
         order_id: orderData.id,
         handler: async function (response) {
@@ -1173,33 +1180,27 @@ function CartDrawer({ cart, setCart, user, setIsCartOpen, setIsAuthOpen, addToCa
             alert("Payment Verification Failed!");
           }
         },
-        prefill: {
-          name: user.name,
-          email: user.email,
-          contact: "9999999999"
-        },
+        prefill: { name: user.name, email: user.email, contact: "9999999999" },
         theme: { color: "#2563eb" } 
       };
 
       const paymentObject = new window.Razorpay(options);
       paymentObject.open();
 
-    } catch (error) { 
-      console.error(error); 
-    }
+    } catch (error) { console.error(error); }
   };
 
   return (
-    <div className="fixed inset-0 z-[80] flex justify-end bg-black/40 backdrop-blur-sm transition-opacity">
+    <div className="fixed inset-0 z-[80] flex justify-end bg-gray-900/40 backdrop-blur-sm transition-opacity">
       <div className="absolute inset-0" onClick={() => setIsCartOpen(false)}></div>
       
-      <div className="w-full max-w-[420px] bg-[#fafafa] h-full shadow-2xl flex flex-col animate-fade-in-up relative z-10 border-l border-gray-200">
-        <div className="bg-white px-5 py-4 flex items-center border-b border-gray-200 shadow-sm sticky top-0 z-20">
-          <button onClick={() => setIsCartOpen(false)} className="text-gray-900 font-bold text-2xl mr-4 hover:bg-gray-100 w-10 h-10 rounded-full flex items-center justify-center transition cursor-pointer">×</button>
+      <div className="w-full max-w-[420px] bg-[#fafafc] h-full shadow-[-20px_0_50px_rgba(0,0,0,0.1)] flex flex-col animate-fade-in-up relative z-10">
+        <div className="bg-white px-6 py-5 flex items-center border-b border-gray-100 shadow-sm sticky top-0 z-20">
+          <button onClick={() => setIsCartOpen(false)} className="text-gray-400 hover:text-gray-900 font-bold text-2xl mr-4 bg-gray-50 hover:bg-gray-100 w-10 h-10 rounded-full flex items-center justify-center transition-colors cursor-pointer">×</button>
           <h2 className="text-xl font-black text-gray-900 tracking-tight">My Cart</h2>
         </div>
 
-        <div className="flex-1 overflow-y-auto pb-32 hide-scroll">
+        <div className="flex-1 overflow-y-auto pb-32 hide-scroll px-4">
           {cart.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-gray-400">
               <div className="w-32 h-32 bg-white rounded-full flex items-center justify-center mb-6 shadow-sm border border-gray-100">
@@ -1208,35 +1209,35 @@ function CartDrawer({ cart, setCart, user, setIsCartOpen, setIsAuthOpen, addToCa
               <p className="font-black text-xl text-gray-600 tracking-tight">Your cart is empty</p>
             </div>
           ) : (
-            <div className="p-4 space-y-4">
-              <div className="bg-green-50 text-green-700 text-xs font-black text-center py-3 rounded-xl border border-green-200 shadow-sm">🎉 Yay! You saved ₹{saved} on items</div>
+            <div className="py-4 space-y-5">
+              <div className="bg-green-50 text-green-700 text-xs font-black text-center py-3.5 rounded-2xl border border-green-100 shadow-sm uppercase tracking-wider">🎉 Yay! You saved ₹{saved}</div>
               
-              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+              <div className="bg-white rounded-[1.5rem] shadow-sm border border-gray-100 overflow-hidden studio-shadow">
                 {cart.map((item, index) => (
-                  <div key={item._id || item.id || index} className={`p-4 flex gap-3 items-center ${index !== cart.length -1 ? 'border-b border-gray-100' : ''}`}>
-                    <div className={`w-16 h-16 bg-gray-50 rounded-xl flex items-center justify-center border border-gray-200 ${item.category === 'Cafe' ? 'p-0 overflow-hidden' : 'p-2'}`}>
+                  <div key={item._id || item.id || index} className={`p-4 flex gap-4 items-center ${index !== cart.length -1 ? 'border-b border-gray-50' : ''}`}>
+                    <div className={`w-16 h-16 bg-gray-50 rounded-xl flex items-center justify-center border border-gray-100 ${item.category === 'Cafe' ? 'p-0 overflow-hidden' : 'p-2'}`}>
                        <img src={getImgSrc(item.imagePath)} className={`w-full h-full ${item.category === 'Cafe' ? 'object-cover' : 'object-contain mix-blend-multiply'}`} alt={item.title} />
                     </div>
                     <div className="flex-1">
-                      <h5 className="text-xs md:text-sm font-black text-gray-800 line-clamp-1">{item.title}</h5>
+                      <h5 className="text-sm font-black text-gray-800 line-clamp-1">{item.title}</h5>
                       <div className="flex items-center gap-2 mt-1.5">
-                        <span className="text-[10px] text-gray-400 line-through font-bold">₹{(item.price*1.15).toFixed(0)}</span>
                         <span className="text-sm font-black text-gray-900">₹{item.price}</span>
+                        <span className="text-[10px] text-gray-400 line-through font-bold">₹{(item.price*1.15).toFixed(0)}</span>
                       </div>
                     </div>
-                    <div className="flex items-center border-2 border-blue-600 rounded-xl bg-white text-blue-600 font-black h-9 overflow-hidden shadow-sm">
-                      <button onClick={() => removeFromCart(item._id || item.id || item.title)} className="px-3 hover:bg-blue-600 hover:text-white transition h-full cursor-pointer">−</button>
+                    <div className="flex items-center border border-gray-200 rounded-xl bg-gray-50 text-gray-900 font-black h-9 overflow-hidden shadow-inner">
+                      <button onClick={() => removeFromCart(item._id || item.id || item.title)} className="px-3 hover:bg-gray-200 transition h-full cursor-pointer text-lg">−</button>
                       <span className="px-2 text-xs">{item.quantity}</span>
-                      <button onClick={() => addToCart(item)} className="px-3 hover:bg-blue-600 hover:text-white transition h-full cursor-pointer">+</button>
+                      <button onClick={() => addToCart(item)} className="px-3 hover:bg-gray-200 transition h-full cursor-pointer text-lg">+</button>
                     </div>
                   </div>
                 ))}
               </div>
 
-              {/* 🎁🔥 THE GAMIFICATION SCRATCH CARD 🔥🎁 */}
-              <div className="bg-gradient-to-br from-indigo-900 to-purple-900 p-1 rounded-2xl shadow-lg relative overflow-hidden group">
+              {/* 🎁 GAMIFICATION */}
+              <div className="bg-gradient-to-br from-indigo-600 to-purple-700 p-1 rounded-[1.5rem] shadow-[0_10px_20px_rgba(79,70,229,0.2)] relative overflow-hidden group">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-yellow-400/20 rounded-full blur-2xl pointer-events-none"></div>
-                <div className="bg-white/10 backdrop-blur-md p-4 rounded-xl border border-white/20">
+                <div className="bg-white/10 backdrop-blur-md p-5 rounded-[1.2rem] border border-white/20">
                    <h4 className="font-black text-white text-sm mb-3 flex items-center gap-2 drop-shadow-md">
                      ✨ Scratch & Win Discount!
                    </h4>
@@ -1244,17 +1245,17 @@ function CartDrawer({ cart, setCart, user, setIsCartOpen, setIsAuthOpen, addToCa
                    {!scratched ? (
                      <div 
                        onClick={handleScratch}
-                       className="w-full h-16 scratch-card-pattern rounded-xl cursor-pointer flex items-center justify-center relative overflow-hidden shadow-inner border-2 border-gray-300 transform active:scale-95 transition-transform"
+                       className="w-full h-16 scratch-card-pattern rounded-xl cursor-pointer flex items-center justify-center relative overflow-hidden shadow-inner border-2 border-white/50 transform active:scale-95 transition-transform"
                      >
                         <div className="absolute inset-0 bg-white/20 group-hover:bg-white/0 transition-all"></div>
-                        <span className="text-gray-800 font-black tracking-widest text-sm drop-shadow-[0_2px_2px_rgba(255,255,255,0.8)] z-10 flex items-center gap-2">
+                        <span className="text-gray-800 font-black tracking-widest text-xs drop-shadow-[0_2px_2px_rgba(255,255,255,0.8)] z-10 flex items-center gap-2">
                            🪙 CLICK TO SCRATCH
                         </span>
                      </div>
                    ) : (
-                     <div className="w-full h-16 bg-gradient-to-r from-green-400 to-emerald-500 rounded-xl flex items-center justify-center shadow-lg border-2 border-green-200 animate-pop-in text-white relative overflow-hidden">
+                     <div className="w-full h-16 bg-gradient-to-r from-green-400 to-emerald-500 rounded-xl flex items-center justify-center shadow-lg border border-white/50 animate-pop-in text-white relative overflow-hidden">
                          <div className="absolute inset-0 bg-white opacity-20 bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:10px_10px]"></div>
-                         <span className="font-black text-lg tracking-wide drop-shadow-md z-10 flex items-center gap-2">
+                         <span className="font-black text-base tracking-wide drop-shadow-md z-10 flex items-center gap-2">
                            🎉 YOU WON ₹{winAmount} OFF!
                          </span>
                      </div>
@@ -1262,23 +1263,22 @@ function CartDrawer({ cart, setCart, user, setIsCartOpen, setIsAuthOpen, addToCa
                 </div>
               </div>
 
-              <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
-                <h4 className="font-black text-sm text-gray-900 mb-4 flex items-center gap-2">📄 Bill Summary</h4>
-                <div className="space-y-3 text-xs md:text-sm font-bold text-gray-500">
+              <div className="bg-white p-6 rounded-[1.5rem] shadow-sm border border-gray-100 studio-shadow">
+                <h4 className="font-black text-sm text-gray-900 mb-5 flex items-center gap-2 uppercase tracking-wider">📄 Bill Summary</h4>
+                <div className="space-y-4 text-sm font-bold text-gray-500">
                   <div className="flex justify-between"><span>Item Total</span><span className="text-gray-800">₹{inrTotal}</span></div>
-                  <div className="flex justify-between border-b border-gray-200 pb-3"><span>Delivery Fee</span><span className="text-gray-800">₹{deliveryFee}</span></div>
+                  <div className="flex justify-between border-b border-gray-100 pb-4"><span>Delivery Fee</span><span className="text-gray-800">₹{deliveryFee}</span></div>
                   
-                  {/* REAL DISCOUNT REFLECTED HERE */}
-                  {discount > 0 && (
-                     <div className="flex justify-between text-green-600 bg-green-50 p-2 rounded-lg border border-green-100 animate-fade-in-up">
-                        <span className="flex items-center gap-1">🎟️ Lucky Discount</span>
-                        <span className="font-black">-₹{discount}</span>
+                  {actualDiscount > 0 && (
+                     <div className="flex justify-between text-green-600 bg-green-50 p-3 rounded-xl border border-green-100 animate-fade-in-up">
+                        <span className="flex items-center gap-1 font-black">🎟️ Lucky Discount</span>
+                        <span className="font-black">-₹{actualDiscount}</span>
                      </div>
                   )}
 
-                  <div className="flex justify-between text-base font-black text-gray-900 pt-1">
+                  <div className="flex justify-between text-lg font-black text-gray-900 pt-1">
                     <span>To Pay</span>
-                    <span className="text-blue-600 text-xl drop-shadow-sm">₹{finalAmount}</span>
+                    <span className="text-blue-600 drop-shadow-sm">₹{finalAmount}</span>
                   </div>
                 </div>
               </div>
@@ -1287,10 +1287,10 @@ function CartDrawer({ cart, setCart, user, setIsCartOpen, setIsAuthOpen, addToCa
         </div>
 
         {cart.length > 0 && (
-          <div className="absolute bottom-0 w-full bg-white p-4 md:p-5 border-t border-gray-200 shadow-[0_-15px_30px_rgba(0,0,0,0.05)] pb-8 md:pb-5 z-30">
-            <button onClick={handleCheckout} className="w-full bg-blue-600 text-white font-black py-4 rounded-xl shadow-lg shadow-blue-600/30 hover:bg-blue-700 hover:-translate-y-1 transition-all flex justify-between px-6 md:px-8 text-sm md:text-lg cursor-pointer">
+          <div className="absolute bottom-0 w-full bg-white/90 backdrop-blur-xl p-5 border-t border-gray-100 shadow-[0_-20px_40px_rgba(0,0,0,0.05)] z-30">
+            <button onClick={handleCheckout} className="w-full bg-gray-900 text-white font-black py-4 md:py-5 rounded-2xl shadow-[0_10px_20px_rgba(0,0,0,0.15)] hover:bg-black hover:-translate-y-1 transition-all flex justify-between px-8 text-base md:text-lg cursor-pointer">
                <span>{user ? 'Proceed to Pay' : 'Login to Proceed'}</span>
-               <span>₹{finalAmount} <span className="ml-1 md:ml-2 font-normal">→</span></span>
+               <span>₹{finalAmount} <span className="ml-2 font-normal">→</span></span>
             </button>
           </div>
         )}
