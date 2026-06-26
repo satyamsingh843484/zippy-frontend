@@ -673,7 +673,7 @@ const filteredProducts = activeTheme === 'All'
         </div>
 
         <div className="max-w-[1400px] mx-auto">
-          {/* CATEGORY NAV */}
+        {/* CATEGORY NAV */}
            <div className="flex overflow-x-auto hide-scroll gap-6 md:gap-8 px-4 md:px-8 pt-3 md:pt-6 border-b border-white/20">
               {Object.values(THEMES).map((tab) => (
                  <div key={tab.label} onClick={() => setActiveTheme(tab.label)} className="flex flex-col items-center cursor-pointer min-w-max relative pb-3 group">
@@ -692,13 +692,10 @@ const filteredProducts = activeTheme === 'All'
 
            <div className="px-4 md:px-8 py-5 md:py-8 flex justify-between items-center relative overflow-hidden">
               <div className="absolute right-[-20px] top-[-10px] opacity-10 text-[120px] transform rotate-12 pointer-events-none">⚡</div>
-              <h2 
-  className="text-[32px] md:text-5xl font-black italic transform -skew-x-[15deg] text-yellow-300 drop-shadow-[0_4px_4px_rgba(0,0,0,0.3)] leading-none ml-2"
-  style={{ fontFamily: "'Playfair Display', serif" }}  // 🔥 BAS YEH LINE ADD KARO
->
-  ⭐ ZIPPY <br className="md:hidden"/> <span className="text-white">SUPER SALE</span> <span className="text-2xl md:text-4xl">🔥</span>
-</h2>
-           </div> 
+              <h2 className="text-[32px] md:text-5xl font-black italic transform -skew-x-[15deg] text-yellow-300 drop-shadow-[0_4px_4px_rgba(0,0,0,0.3)] leading-none ml-2">
+                 ⭐ ZIPPY <br className="md:hidden"/> <span className="text-white">SUPER SALE</span> <span className="text-2xl md:text-4xl">🔥</span>
+              </h2>
+           </div>  
 
            {/* UNIFORM EDGE-TO-EDGE BANNERS */}
            <div className="w-full pb-6 md:pb-10">
