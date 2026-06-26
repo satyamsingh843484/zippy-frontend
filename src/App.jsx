@@ -1947,14 +1947,12 @@ function Footer({ setView, currentView = 'home' }) {
   const handlePageChange = (targetView, linkName) => {
     setActiveLink(targetView);
     
-    // Smooth transition effect
     const footer = document.querySelector('footer');
     footer.style.opacity = '0.7';
     footer.style.transform = 'scale(0.98)';
     
     setTimeout(() => {
       setView(targetView);
-      // Scroll to top smoothly
       window.scrollTo({ top: 0, behavior: 'smooth' });
       
       setTimeout(() => {
@@ -2000,12 +1998,12 @@ function Footer({ setView, currentView = 'home' }) {
         transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
       }}
     >
-      <div className="max-w-[1200px] mx-auto px-6 md:px-8">
+      <div className="max-w-[1200px] mx-auto px-4 md:px-8">
         
         <div className="flex flex-col md:flex-row justify-between items-start gap-10 mb-16">
           
           {/* BRANDING SECTION */}
-          <div className="flex-1">
+          <div className="flex-1 w-full">
             <h1 className="text-[46px] font-black tracking-tighter text-[#adb5bd] leading-none mb-3 lowercase transition-colors duration-300">
               zippy
             </h1>
@@ -2025,7 +2023,7 @@ function Footer({ setView, currentView = 'home' }) {
           </div>
 
           {/* QUICK LINKS SECTION */}
-          <div className="flex-1">
+          <div className="flex-1 w-full">
             <h4 className="font-black text-[#a1a1aa] mb-5 uppercase tracking-widest text-[11px] transition-colors duration-300">
               Quick Links
             </h4>
@@ -2050,13 +2048,13 @@ function Footer({ setView, currentView = 'home' }) {
             </ul>
           </div>
 
-          {/* CONNECT WITH US & SUBSCRIBE SECTION */}
-          <div className="flex-[1.5]">
+          {/* CONNECT WITH US & SUBSCRIBE SECTION - FIXED FOR MOBILE */}
+          <div className="flex-[1.5] w-full">
             <h4 className="font-black text-[#a1a1aa] mb-5 uppercase tracking-widest text-[11px] transition-colors duration-300">
               Connect With Us
             </h4>
             
-            <div className="flex gap-3 mb-6">
+            <div className="flex gap-3 mb-6 flex-wrap">
               {/* INSTAGRAM */}
               <a href="https://www.instagram.com/_s.a.t.y.a.m.m_/" target="_blank" rel="noreferrer" 
                 className="w-10 h-10 bg-[#f3f4f6] text-[#6b7280] rounded-full flex items-center justify-center hover:bg-gradient-to-tr hover:from-yellow-400 hover:via-pink-500 hover:to-purple-600 hover:text-white hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
@@ -2083,17 +2081,18 @@ function Footer({ setView, currentView = 'home' }) {
               Subscribe for fresh updates ☕
             </p>
             
-            <form className="flex gap-2 w-full max-w-[380px]" onSubmit={handleSubscribe}>
+            {/* 🔥 FIXED: Mobile Responsive Subscribe Form */}
+            <form className="flex flex-col sm:flex-row gap-2 w-full max-w-[380px]" onSubmit={handleSubscribe}>
               <input 
                 type="email" 
                 required 
                 placeholder="Your email" 
-                className="flex-1 bg-white border border-gray-200 px-5 py-2.5 rounded-[2rem] text-sm font-bold text-gray-800 focus:outline-none focus:border-[#005af0] focus:ring-2 focus:ring-[#005af0]/20 transition-all duration-300 shadow-sm placeholder-gray-400"
+                className="flex-1 w-full bg-white border border-gray-200 px-4 py-2.5 rounded-[2rem] text-sm font-bold text-gray-800 focus:outline-none focus:border-[#005af0] focus:ring-2 focus:ring-[#005af0]/20 transition-all duration-300 shadow-sm placeholder-gray-400"
               />
               <button 
                 type="submit" 
                 disabled={isSubscribing}
-                className="bg-[#005af0] text-white font-black px-7 py-2.5 rounded-[2rem] text-sm hover:bg-blue-700 hover:shadow-lg hover:-translate-y-0.5 active:scale-95 transition-all duration-300 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 min-w-[120px] justify-center"
+                className="w-full sm:w-auto bg-[#005af0] text-white font-black px-5 py-2.5 rounded-[2rem] text-sm hover:bg-blue-700 hover:shadow-lg hover:-translate-y-0.5 active:scale-95 transition-all duration-300 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 justify-center whitespace-nowrap"
               >
                 {isSubscribing ? (
                   <>
@@ -2101,9 +2100,11 @@ function Footer({ setView, currentView = 'home' }) {
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
-                    Loading...
+                    <span className="text-xs sm:text-sm">Loading...</span>
                   </>
-                ) : 'Subscribe'}
+                ) : (
+                  <span>Subscribe</span>
+                )}
               </button>
             </form>
           </div>
@@ -2113,7 +2114,7 @@ function Footer({ setView, currentView = 'home' }) {
         {/* BOTTOM LEGAL BAR */}
         <div className="pt-6 border-t border-gray-200 flex flex-col md:flex-row justify-between items-center gap-4 text-[12px] font-bold text-[#9ca3af] transition-colors duration-300">
           <p>© 2026 Zippy Cafe. All rights reserved.</p>
-          <div className="flex gap-6">
+          <div className="flex flex-wrap justify-center gap-4 md:gap-6">
             <a href="#" onClick={(e) => e.preventDefault()} className="hover:text-gray-800 transition-colors">
               Privacy Policy
             </a>
