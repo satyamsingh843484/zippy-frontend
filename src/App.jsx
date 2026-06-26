@@ -58,30 +58,6 @@ export default function App() {
       setTrackingStatus(status);
     });
   };
-  const [hours, setHours] = useState(12);
-const [minutes, setMinutes] = useState(45);
-const [seconds, setSeconds] = useState(30);
-// Live Countdown Effect
-useEffect(() => {
-  const timer = setInterval(() => {
-    setSeconds((prev) => {
-      if (prev > 0) return prev - 1;
-      
-      setMinutes((prevMin) => {
-        if (prevMin > 0) return prevMin - 1;
-        
-        setHours((prevHr) => {
-          if (prevHr > 0) return prevHr - 1;
-          return 0; // Timer ends
-        });
-        return 59;
-      });
-      return 59;
-    });
-  }, 1000);
-
-  return () => clearInterval(timer);
-}, []);
 
   // 2. Jaise hi Cart mein kuch change ho, usko LocalStorage mein save kar do
   useEffect(() => {
@@ -698,85 +674,31 @@ const filteredProducts = activeTheme === 'All'
 
         <div className="max-w-[1400px] mx-auto">
           {/* CATEGORY NAV */}
-<div className="flex overflow-x-auto hide-scroll gap-6 md:gap-8 px-4 md:px-8 pt-3 md:pt-6 border-b border-white/20">
-  {Object.values(THEMES).map((tab) => (
-    <div key={tab.label} onClick={() => setActiveTheme(tab.label)} className="flex flex-col items-center cursor-pointer min-w-max relative pb-3 group">
-      <span className={`text-2xl mb-1 transition-transform duration-300 ${activeTheme === tab.label ? 'scale-125 drop-shadow-md' : 'opacity-80 group-hover:opacity-100 group-hover:scale-110'}`}>
-        {tab.icon}
-      </span>
-      <span className={`text-[11px] md:text-sm font-black transition-all mt-1 ${activeTheme === tab.label ? 'text-white drop-shadow-sm' : 'text-white/70 group-hover:text-white'}`}>
-        {tab.label}
-      </span>
-      {activeTheme === tab.label && (
-        <div className="absolute bottom-0 w-full h-1 bg-white rounded-t-md shadow-[0_0_10px_rgba(255,255,255,0.8)]"></div>
-      )}
-    </div>
-  ))}
-</div>
+           <div className="flex overflow-x-auto hide-scroll gap-6 md:gap-8 px-4 md:px-8 pt-3 md:pt-6 border-b border-white/20">
+              {Object.values(THEMES).map((tab) => (
+                 <div key={tab.label} onClick={() => setActiveTheme(tab.label)} className="flex flex-col items-center cursor-pointer min-w-max relative pb-3 group">
+                    <span className={`text-2xl mb-1 transition-transform duration-300 ${activeTheme === tab.label ? 'scale-125 drop-shadow-md' : 'opacity-80 group-hover:opacity-100 group-hover:scale-110'}`}>
+                      {tab.icon}
+                    </span>
+                    <span className={`text-[11px] md:text-sm font-black transition-all mt-1 ${activeTheme === tab.label ? 'text-white drop-shadow-sm' : 'text-white/70 group-hover:text-white'}`}>
+                      {tab.label}
+                    </span>
+                    {activeTheme === tab.label && (
+                       <div className="absolute bottom-0 w-full h-1 bg-white rounded-t-md shadow-[0_0_10px_rgba(255,255,255,0.8)]"></div>
+                    )}
+                 </div>
+              ))}
+           </div>
 
-{/* SUPER SALE BANNER - Premium Font + Live Countdown */}
-<div className="px-4 md:px-8 py-5 md:py-8 flex justify-between items-center relative overflow-hidden">
-  
-  {/* Lightning Decoration */}
-  <div className="absolute right-[-20px] top-[-10px] opacity-10 text-[120px] transform rotate-12 pointer-events-none">⚡</div>
-  
-  {/* LEFT: Title with Premium Font */}
-  <div className="flex-1">
-    <h2 className="text-[32px] md:text-5xl font-black italic transform -skew-x-[15deg] leading-none ml-2">
-      <span className="text-yellow-300 drop-shadow-[0_4px_4px_rgba(0,0,0,0.3)]" 
-            style={{ fontFamily: "'Poppins', 'Inter', system-ui, sans-serif" }}>
-        ⭐ ZIPPY
-      </span>
-      <br className="md:hidden"/>
-      <span className="text-white drop-shadow-[0_4px_4px_rgba(0,0,0,0.3)]"
-            style={{ fontFamily: "'Poppins', 'Inter', system-ui, sans-serif" }}>
-        SUPER SALE
-      </span>
-      <span className="text-2xl md:text-4xl inline-block ml-1">🔥</span>
-    </h2>
-  </div>
-  
-  {/* RIGHT: Live Countdown Timer */}
-  <div className="flex items-center gap-2 md:gap-4 flex-shrink-0">
-    {/* Hours */}
-    <div className="text-center">
-      <div className="bg-white/10 backdrop-blur-sm rounded-xl px-2 md:px-4 py-1 md:py-2 border border-white/20 min-w-[40px] md:min-w-[60px]">
-        <span className="text-2xl md:text-4xl font-black text-white tabular-nums"
-              style={{ fontFamily: "'Poppins', 'Inter', system-ui, sans-serif" }}>
-          {String(hours).padStart(2, '0')}
-        </span>
-      </div>
-      <p className="text-[8px] md:text-[10px] text-white/60 font-bold uppercase tracking-wider mt-1">Hours</p>
-    </div>
-    
-    <span className="text-2xl md:text-3xl font-black text-white/50 animate-pulse">:</span>
-    
-    {/* Minutes */}
-    <div className="text-center">
-      <div className="bg-white/10 backdrop-blur-sm rounded-xl px-2 md:px-4 py-1 md:py-2 border border-white/20 min-w-[40px] md:min-w-[60px]">
-        <span className="text-2xl md:text-4xl font-black text-white tabular-nums"
-              style={{ fontFamily: "'Poppins', 'Inter', system-ui, sans-serif" }}>
-          {String(minutes).padStart(2, '0')}
-        </span>
-      </div>
-      <p className="text-[8px] md:text-[10px] text-white/60 font-bold uppercase tracking-wider mt-1">Mins</p>
-    </div>
-    
-    <span className="text-2xl md:text-3xl font-black text-white/50 animate-pulse">:</span>
-    
-    {/* Seconds */}
-    <div className="text-center">
-      <div className="bg-white/10 backdrop-blur-sm rounded-xl px-2 md:px-4 py-1 md:py-2 border border-white/20 min-w-[40px] md:min-w-[60px]">
-        <span className="text-2xl md:text-4xl font-black text-white tabular-nums"
-              style={{ fontFamily: "'Poppins', 'Inter', system-ui, sans-serif" }}>
-          {String(seconds).padStart(2, '0')}
-        </span>
-      </div>
-      <p className="text-[8px] md:text-[10px] text-white/60 font-bold uppercase tracking-wider mt-1">Secs</p>
-    </div>
-  </div>
-  
-</div> 
+           <div className="px-4 md:px-8 py-5 md:py-8 flex justify-between items-center relative overflow-hidden">
+              <div className="absolute right-[-20px] top-[-10px] opacity-10 text-[120px] transform rotate-12 pointer-events-none">⚡</div>
+              <h2 
+  className="text-[32px] md:text-5xl font-black italic transform -skew-x-[15deg] text-yellow-300 drop-shadow-[0_4px_4px_rgba(0,0,0,0.3)] leading-none ml-2"
+  style={{ fontFamily: "'Playfair Display', serif" }}  // 🔥 BAS YEH LINE ADD KARO
+>
+  ⭐ ZIPPY <br className="md:hidden"/> <span className="text-white">SUPER SALE</span> <span className="text-2xl md:text-4xl">🔥</span>
+</h2>
+           </div> 
 
            {/* UNIFORM EDGE-TO-EDGE BANNERS */}
            <div className="w-full pb-6 md:pb-10">
