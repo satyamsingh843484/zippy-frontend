@@ -293,6 +293,55 @@ export default function App() {
           0% { transform: scale(0.8); opacity: 0; }
           100% { transform: scale(1); opacity: 1; }
         }
+
+        /* Slide In Animation */
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(100px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+.animate-slide-in-right {
+  animation: slideInRight 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+/* Pop In Animation */
+@keyframes popIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.8) rotate(-5deg);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+}
+.animate-pop-in {
+  animation: popIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+/* Floating Particles */
+@keyframes floatParticle {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg) scale(1);
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-60px) rotate(720deg) scale(0);
+    opacity: 0;
+  }
+}
+.animate-float-particle {
+  animation: floatParticle 3s ease-out infinite;
+}
+
       `}</style>
 
       {/* --- AESTHETIC BACKGROUND BLOBS --- */}
@@ -1095,60 +1144,61 @@ function EditProductModal({ product, onClose }) {
 function CartDrawer({ cart, setCart, user, setIsCartOpen, setIsAuthOpen, addToCart, removeFromCart, startTracking }) {
   const cartTotal = cart.reduce((total, item) => total + (item.price * item.quantity), 0);
   const inrTotal = parseFloat((cartTotal).toFixed(2));
-  const saved = (cartTotal * 0.15).toFixed(2); 
+  const saved = (cartTotal * 0.15).toFixed(2);
 
   const [scratched, setScratched] = useState(false);
   const [winAmount, setWinAmount] = useState(0);
   const [discount, setDiscount] = useState(0);
+  const [isScratching, setIsScratching] = useState(false);
 
+  // SMART SCRATCH LOGIC
   useEffect(() => {
     if (!scratched) {
-      // 🔥 BUG FIX: SMART BUSINESS LOGIC 🔥
-      // Max win amount ya toh ₹50 hoga, ya Cart ka Total (agar cart 50 se kam hai).
       const maxWin = Math.min(50, Math.floor(inrTotal));
-      
-      // Amount 1 se maxWin ke beech generate hoga. Agar cart 0 hai to 0.
       const luckyAmount = maxWin > 0 ? Math.floor(Math.random() * maxWin) + 1 : 0;
       setWinAmount(luckyAmount);
     }
-  }, [scratched]); // Yeh logic cart open hone pe sirf 1 baar set hoga
+  }, [scratched, inrTotal]);
 
   const handleScratch = () => {
-    setScratched(true);
-    setDiscount(winAmount);
+    if (isScratching) return;
+    setIsScratching(true);
+    
+    setTimeout(() => {
+      setScratched(true);
+      setDiscount(winAmount);
+      setIsScratching(false);
+    }, 800);
   };
 
-  // Safety Feature: Agar user scratch karne ke BAAD koi item cart se hata de 
-  // aur cart ka total discount se chhota ho jaye, tabhi hum discount adjust karenge.
   const actualDiscount = scratched ? Math.min(discount, inrTotal) : 0;
-  
   const deliveryFee = 2;
-  const finalAmount = parseFloat((inrTotal - actualDiscount + deliveryFee).toFixed(2)); 
+  const finalAmount = parseFloat((inrTotal - actualDiscount + deliveryFee).toFixed(2));
 
+  // CHECKOUT
   const handleCheckout = async () => {
-    if(!user) { setIsCartOpen(false); setIsAuthOpen(true); return; }
-    
+    if (!user) { setIsCartOpen(false); setIsAuthOpen(true); return; }
     if (finalAmount <= 0) { alert("Invalid order amount."); return; }
 
     const res = await loadRazorpayScript();
     if (!res) { alert("Razorpay SDK failed to load. Are you online?"); return; }
 
     try {
-      const orderData = await fetch(`${API_URL}/payment/create-order`, { 
-        method: 'POST', 
+      const orderData = await fetch(`${API_URL}/payment/create-order`, {
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount: finalAmount }) 
+        body: JSON.stringify({ amount: finalAmount })
       }).then((t) => t.json());
 
       if (!orderData || !orderData.id) { alert("Server error! Cannot start payment."); return; }
 
       const options = {
-        key: "rzp_test_T4Zw9v5VFk4BbP", 
+        key: "rzp_test_T4Zw9v5VFk4BbP",
         amount: orderData.amount,
         currency: orderData.currency,
         name: "Zippy Groceries",
-        description: `Order total after ₹${actualDiscount} Scratch Discount`, 
-        image: "https://images.unsplash.com/photo-1542838132-92c53300491e?w=100", 
+        description: `Order total after ₹${actualDiscount} Scratch Discount`,
+        image: "https://images.unsplash.com/photo-1542838132-92c53300491e?w=100",
         order_id: orderData.id,
         handler: async function (response) {
           const verifyData = await fetch(`${API_URL}/payment/verify-payment`, {
@@ -1162,123 +1212,205 @@ function CartDrawer({ cart, setCart, user, setIsCartOpen, setIsAuthOpen, addToCa
           });
 
           if (verifyData.ok) {
-            await fetch(`${API_URL}/orders/place`, { 
+            await fetch(`${API_URL}/orders/place`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
                 customerName: user.name,
-                totalAmount: finalAmount, 
-                cart: cart 
+                totalAmount: finalAmount,
+                cart: cart
               })
             });
 
-            setCart([]); 
+            setCart([]);
             setIsCartOpen(false);
-            startTracking(response.razorpay_payment_id); 
-            
+            startTracking(response.razorpay_payment_id);
           } else {
             alert("Payment Verification Failed!");
           }
         },
         prefill: { name: user.name, email: user.email, contact: "9999999999" },
-        theme: { color: "#2563eb" } 
+        theme: { color: "#2563eb" }
       };
 
       const paymentObject = new window.Razorpay(options);
       paymentObject.open();
-
     } catch (error) { console.error(error); }
   };
 
   return (
-    <div className="fixed inset-0 z-[80] flex justify-end bg-gray-900/40 backdrop-blur-sm transition-opacity">
+    <div className="fixed inset-0 z-[80] flex justify-end bg-black/50 backdrop-blur-sm transition-all duration-500">
       <div className="absolute inset-0" onClick={() => setIsCartOpen(false)}></div>
-      
-      <div className="w-full max-w-[420px] bg-[#fafafc] h-full shadow-[-20px_0_50px_rgba(0,0,0,0.1)] flex flex-col animate-fade-in-up relative z-10">
-        <div className="bg-white px-6 py-5 flex items-center border-b border-gray-100 shadow-sm sticky top-0 z-20">
-          <button onClick={() => setIsCartOpen(false)} className="text-gray-400 hover:text-gray-900 font-bold text-2xl mr-4 bg-gray-50 hover:bg-gray-100 w-10 h-10 rounded-full flex items-center justify-center transition-colors cursor-pointer">×</button>
-          <h2 className="text-xl font-black text-gray-900 tracking-tight">My Cart</h2>
+
+      <div className="w-full max-w-[440px] bg-white h-full shadow-[-20px_0_60px_rgba(0,0,0,0.15)] flex flex-col relative z-10 animate-slide-in-right">
+        
+        {/* HEADER */}
+        <div className="bg-white px-6 py-5 flex items-center justify-between border-b border-gray-100/80 sticky top-0 z-20">
+          <div className="flex items-center gap-3">
+            <button 
+              onClick={() => setIsCartOpen(false)} 
+              className="text-gray-400 hover:text-gray-900 font-bold text-2xl w-10 h-10 rounded-full hover:bg-gray-100 flex items-center justify-center transition-all duration-300 cursor-pointer"
+            >
+              ×
+            </button>
+            <div>
+              <h2 className="text-xl font-black text-gray-900 tracking-tight">Your Cart</h2>
+              <p className="text-xs text-gray-400 font-medium">{cart.length} items</p>
+            </div>
+          </div>
+          
+          <div className="relative">
+            <div className="w-10 h-10 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-full flex items-center justify-center">
+              <span className="text-lg">🛒</span>
+            </div>
+            {cart.length > 0 && (
+              <span className="absolute -top-1 -right-1 w-5 h-5 bg-gradient-to-r from-blue-500 to-indigo-600 text-white text-[10px] font-black rounded-full flex items-center justify-center shadow-lg">
+                {cart.length}
+              </span>
+            )}
+          </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto pb-32 hide-scroll px-4">
+        {/* BODY */}
+        <div className="flex-1 overflow-y-auto pb-32 hide-scroll px-4 py-4">
           {cart.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-full text-gray-400">
-              <div className="w-32 h-32 bg-white rounded-full flex items-center justify-center mb-6 shadow-sm border border-gray-100">
+            <div className="flex flex-col items-center justify-center h-full text-center">
+              <div className="w-32 h-32 bg-gradient-to-br from-gray-50 to-gray-100 rounded-full flex items-center justify-center mb-6 shadow-inner">
                 <span className="text-6xl drop-shadow-md">🛒</span>
               </div>
-              <p className="font-black text-xl text-gray-600 tracking-tight">Your cart is empty</p>
+              <p className="font-black text-2xl text-gray-700 tracking-tight">Cart is empty</p>
+              <p className="text-gray-400 text-sm mt-2 font-medium">Add items to get started</p>
+              <button 
+                onClick={() => setIsCartOpen(false)}
+                className="mt-6 px-8 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-bold rounded-full shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
+              >
+                Browse Menu →
+              </button>
             </div>
           ) : (
-            <div className="py-4 space-y-5">
-              <div className="bg-green-50 text-green-700 text-xs font-black text-center py-3.5 rounded-2xl border border-green-100 shadow-sm uppercase tracking-wider">🎉 Yay! You saved ₹{saved}</div>
-              
-              <div className="bg-white rounded-[1.5rem] shadow-sm border border-gray-100 overflow-hidden studio-shadow">
+            <div className="py-2 space-y-5">
+              {/* SAVINGS BANNER */}
+              <div className="bg-gradient-to-r from-emerald-50 to-teal-50 text-emerald-700 text-xs font-black text-center py-3.5 rounded-2xl border border-emerald-100/50 shadow-sm uppercase tracking-wider flex items-center justify-center gap-2">
+                <span className="text-lg">🎉</span>
+                You saved <span className="text-emerald-600 text-sm">₹{saved}</span> today!
+              </div>
+
+              {/* CART ITEMS */}
+              <div className="bg-white rounded-2xl shadow-sm border border-gray-100/80 overflow-hidden">
                 {cart.map((item, index) => (
-                  <div key={item._id || item.id || index} className={`p-4 flex gap-4 items-center ${index !== cart.length -1 ? 'border-b border-gray-50' : ''}`}>
-                    <div className={`w-16 h-16 bg-gray-50 rounded-xl flex items-center justify-center border border-gray-100 ${item.category === 'Cafe' ? 'p-0 overflow-hidden' : 'p-2'}`}>
-                       <img src={getImgSrc(item.imagePath)} className={`w-full h-full ${item.category === 'Cafe' ? 'object-cover' : 'object-contain mix-blend-multiply'}`} alt={item.title} />
+                  <div key={item._id || item.id || index} className={`p-4 flex gap-4 items-center ${index !== cart.length - 1 ? 'border-b border-gray-50' : ''} hover:bg-gray-50/50 transition-colors duration-200`}>
+                    <div className={`w-16 h-16 bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl flex items-center justify-center border border-gray-100/80 ${item.category === 'Cafe' ? 'p-0 overflow-hidden' : 'p-2'}`}>
+                      <img src={getImgSrc(item.imagePath)} className={`w-full h-full ${item.category === 'Cafe' ? 'object-cover' : 'object-contain mix-blend-multiply'}`} alt={item.title} />
                     </div>
-                    <div className="flex-1">
+                    
+                    <div className="flex-1 min-w-0">
                       <h5 className="text-sm font-black text-gray-800 line-clamp-1">{item.title}</h5>
-                      <div className="flex items-center gap-2 mt-1.5">
+                      <div className="flex items-center gap-2 mt-1">
                         <span className="text-sm font-black text-gray-900">₹{item.price}</span>
                         <span className="text-[10px] text-gray-400 line-through font-bold">₹{(item.price*1.15).toFixed(0)}</span>
+                        <span className="text-[9px] text-emerald-600 font-black bg-emerald-50 px-1.5 py-0.5 rounded">15% OFF</span>
                       </div>
                     </div>
-                    <div className="flex items-center border border-gray-200 rounded-xl bg-gray-50 text-gray-900 font-black h-9 overflow-hidden shadow-inner">
-                      <button onClick={() => removeFromCart(item._id || item.id || item.title)} className="px-3 hover:bg-gray-200 transition h-full cursor-pointer text-lg">−</button>
-                      <span className="px-2 text-xs">{item.quantity}</span>
-                      <button onClick={() => addToCart(item)} className="px-3 hover:bg-gray-200 transition h-full cursor-pointer text-lg">+</button>
+                    
+                    <div className="flex items-center border border-gray-200 rounded-xl bg-gray-50 text-gray-900 font-black h-9 overflow-hidden shadow-inner flex-shrink-0">
+                      <button onClick={() => removeFromCart(item._id || item.id || item.title)} className="px-3 hover:bg-gray-200 transition h-full cursor-pointer text-lg active:scale-90">−</button>
+                      <span className="px-2 text-xs min-w-[20px] text-center">{item.quantity}</span>
+                      <button onClick={() => addToCart(item)} className="px-3 hover:bg-gray-200 transition h-full cursor-pointer text-lg active:scale-90">+</button>
                     </div>
                   </div>
                 ))}
               </div>
 
-              {/* 🎁 GAMIFICATION */}
-              <div className="bg-gradient-to-br from-indigo-600 to-purple-700 p-1 rounded-[1.5rem] shadow-[0_10px_20px_rgba(79,70,229,0.2)] relative overflow-hidden group">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-yellow-400/20 rounded-full blur-2xl pointer-events-none"></div>
-                <div className="bg-white/10 backdrop-blur-md p-5 rounded-[1.2rem] border border-white/20">
-                   <h4 className="font-black text-white text-sm mb-3 flex items-center gap-2 drop-shadow-md">
-                     ✨ Scratch & Win Discount!
-                   </h4>
-                   
-                   {!scratched ? (
-                     <div 
-                       onClick={handleScratch}
-                       className="w-full h-16 scratch-card-pattern rounded-xl cursor-pointer flex items-center justify-center relative overflow-hidden shadow-inner border-2 border-white/50 transform active:scale-95 transition-transform"
-                     >
-                        <div className="absolute inset-0 bg-white/20 group-hover:bg-white/0 transition-all"></div>
-                        <span className="text-gray-800 font-black tracking-widest text-xs drop-shadow-[0_2px_2px_rgba(255,255,255,0.8)] z-10 flex items-center gap-2">
-                           🪙 CLICK TO SCRATCH
-                        </span>
-                     </div>
-                   ) : (
-                     <div className="w-full h-16 bg-gradient-to-r from-green-400 to-emerald-500 rounded-xl flex items-center justify-center shadow-lg border border-white/50 animate-pop-in text-white relative overflow-hidden">
-                         <div className="absolute inset-0 bg-white opacity-20 bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:10px_10px]"></div>
-                         <span className="font-black text-base tracking-wide drop-shadow-md z-10 flex items-center gap-2">
-                           🎉 YOU WON ₹{winAmount} OFF!
-                         </span>
-                     </div>
-                   )}
+              {/* SCRATCH CARD */}
+              <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 p-[2px] shadow-[0_10px_40px_rgba(79,70,229,0.25)] group">
+                <div className="bg-white/5 backdrop-blur-xl p-5 rounded-2xl border border-white/10">
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="font-black text-white text-sm flex items-center gap-2 drop-shadow-md">
+                      <span className="text-lg">✨</span> Scratch & Win
+                    </h4>
+                    <span className="text-[10px] font-bold text-white/60 uppercase tracking-wider bg-white/10 px-3 py-1 rounded-full">Lucky Draw</span>
+                  </div>
+                  
+                  {!scratched ? (
+                    <div onClick={handleScratch} className={`relative w-full h-20 rounded-xl cursor-pointer overflow-hidden transition-all duration-500 ${isScratching ? 'scale-95' : 'hover:scale-[1.02]'}`}>
+                      <div className="absolute inset-0 bg-gradient-to-r from-gray-300 via-gray-200 to-gray-300">
+                        <div className="absolute inset-0 bg-[repeating-linear-gradient(45deg,transparent,transparent_10px,rgba(255,255,255,0.1)_10px,rgba(255,255,255,0.1)_20px)]"></div>
+                      </div>
+                      <div className={`absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full ${isScratching ? 'translate-x-full transition-transform duration-700' : ''}`}></div>
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="text-center">
+                          {isScratching ? (
+                            <div className="flex items-center gap-2">
+                              <svg className="animate-spin h-6 w-6 text-gray-700" viewBox="0 0 24 24">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"/>
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"/>
+                              </svg>
+                              <span className="font-black text-gray-700 text-sm">Scratching...</span>
+                            </div>
+                          ) : (
+                            <span className="font-black text-gray-700 text-xs tracking-[0.15em] uppercase flex items-center gap-2">
+                              <span className="text-xl">🪙</span> Click to Scratch <span className="text-xl">🪙</span>
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="relative w-full h-20 bg-gradient-to-r from-emerald-400 via-green-500 to-emerald-600 rounded-xl flex items-center justify-center overflow-hidden shadow-lg border border-white/30">
+                      <div className="absolute inset-0 bg-white/20 bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:12px_12px]"></div>
+                      <div className="absolute inset-0 overflow-hidden">
+                        {[...Array(12)].map((_, i) => (
+                          <div key={i} className={`absolute w-1.5 h-1.5 rounded-full animate-float-particle`} style={{
+                            backgroundColor: ['#FFD700', '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FF9FF3'][i % 6],
+                            left: `${Math.random() * 100}%`,
+                            top: `${Math.random() * 100}%`,
+                            animationDelay: `${Math.random() * 2}s`,
+                            animationDuration: `${2 + Math.random() * 2}s`
+                          }} />
+                        ))}
+                      </div>
+                      <div className="relative z-10 text-center animate-pop-in">
+                        <div className="flex items-center justify-center gap-3">
+                          <span className="text-2xl">🎉</span>
+                          <span className="font-black text-white text-base tracking-wide drop-shadow-md">YOU WON ₹{winAmount} OFF!</span>
+                          <span className="text-2xl">🎉</span>
+                        </div>
+                        <p className="text-[10px] text-white/70 font-bold uppercase tracking-wider mt-0.5">Applied to your order 🎯</p>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 
-              <div className="bg-white p-6 rounded-[1.5rem] shadow-sm border border-gray-100 studio-shadow">
-                <h4 className="font-black text-sm text-gray-900 mb-5 flex items-center gap-2 uppercase tracking-wider">📄 Bill Summary</h4>
-                <div className="space-y-4 text-sm font-bold text-gray-500">
-                  <div className="flex justify-between"><span>Item Total</span><span className="text-gray-800">₹{inrTotal}</span></div>
-                  <div className="flex justify-between border-b border-gray-100 pb-4"><span>Delivery Fee</span><span className="text-gray-800">₹{deliveryFee}</span></div>
-                  
+              {/* BILL SUMMARY */}
+              <div className="bg-white rounded-2xl shadow-sm border border-gray-100/80 overflow-hidden">
+                <div className="p-5">
+                  <h4 className="font-black text-sm text-gray-900 flex items-center gap-2 uppercase tracking-wider">
+                    <span className="text-lg">📄</span> Bill Summary
+                  </h4>
+                </div>
+                <div className="px-5 pb-5 space-y-3 text-sm font-bold">
+                  <div className="flex justify-between items-center py-2 border-b border-gray-50">
+                    <span className="text-gray-500 font-medium">Item Total</span>
+                    <span className="text-gray-900">₹{inrTotal}</span>
+                  </div>
+                  <div className="flex justify-between items-center py-2 border-b border-gray-50">
+                    <span className="text-gray-500 font-medium">Delivery Fee</span>
+                    <span className="text-gray-900">₹{deliveryFee}</span>
+                  </div>
                   {actualDiscount > 0 && (
-                     <div className="flex justify-between text-green-600 bg-green-50 p-3 rounded-xl border border-green-100 animate-fade-in-up">
-                        <span className="flex items-center gap-1 font-black">🎟️ Lucky Discount</span>
-                        <span className="font-black">-₹{actualDiscount}</span>
-                     </div>
+                    <div className="flex justify-between items-center py-2 bg-emerald-50/50 px-3 rounded-xl -mx-3 border border-emerald-100/50">
+                      <span className="text-emerald-700 font-black flex items-center gap-1.5">
+                        <span className="text-sm">🎟️</span> Lucky Discount
+                      </span>
+                      <span className="text-emerald-700 font-black">-₹{actualDiscount}</span>
+                    </div>
                   )}
-
-                  <div className="flex justify-between text-lg font-black text-gray-900 pt-1">
-                    <span>To Pay</span>
-                    <span className="text-blue-600 drop-shadow-sm">₹{finalAmount}</span>
+                  <div className="flex justify-between items-center pt-3 border-t-2 border-gray-100">
+                    <span className="text-base font-black text-gray-900">Total</span>
+                    <span className="text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">
+                      ₹{finalAmount}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -1286,11 +1418,20 @@ function CartDrawer({ cart, setCart, user, setIsCartOpen, setIsAuthOpen, addToCa
           )}
         </div>
 
+        {/* CHECKOUT BUTTON */}
         {cart.length > 0 && (
-          <div className="absolute bottom-0 w-full bg-white/90 backdrop-blur-xl p-5 border-t border-gray-100 shadow-[0_-20px_40px_rgba(0,0,0,0.05)] z-30">
-            <button onClick={handleCheckout} className="w-full bg-gray-900 text-white font-black py-4 md:py-5 rounded-2xl shadow-[0_10px_20px_rgba(0,0,0,0.15)] hover:bg-black hover:-translate-y-1 transition-all flex justify-between px-8 text-base md:text-lg cursor-pointer">
-               <span>{user ? 'Proceed to Pay' : 'Login to Proceed'}</span>
-               <span>₹{finalAmount} <span className="ml-2 font-normal">→</span></span>
+          <div className="absolute bottom-0 w-full bg-white/95 backdrop-blur-xl p-5 border-t border-gray-100/80 shadow-[-20px_0_40px_rgba(0,0,0,0.05)] z-30">
+            <button 
+              onClick={handleCheckout} 
+              className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-black py-4 rounded-2xl shadow-[0_10px_30px_rgba(79,70,229,0.3)] hover:shadow-[0_15px_40px_rgba(79,70,229,0.4)] hover:-translate-y-1 transition-all duration-300 flex justify-between items-center px-6 text-base"
+            >
+              <span className="flex items-center gap-2">
+                {user ? '🛍️ Proceed to Pay' : '🔐 Login to Proceed'}
+              </span>
+              <span className="flex items-center gap-2">
+                ₹{finalAmount}
+                <span className="text-lg transition-transform duration-300 group-hover:translate-x-1">→</span>
+              </span>
             </button>
           </div>
         )}
