@@ -294,62 +294,6 @@ export default function App() {
           100% { transform: scale(1); opacity: 1; }
         }
 
-        /* ===== SLIDE IN ===== */
-@keyframes slideInRight {
-  from { opacity: 0; transform: translateX(100px) scale(0.95); }
-  to { opacity: 1; transform: translateX(0) scale(1); }
-}
-.animate-slide-in-right {
-  animation: slideInRight 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-}
-
-/* ===== SLIDE DOWN ===== */
-@keyframes slideDown {
-  from { opacity: 0; transform: translateY(-20px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-.animate-slide-down {
-  animation: slideDown 0.4s ease-out forwards;
-}
-
-/* ===== POP IN ===== */
-@keyframes popIn {
-  0% { opacity: 0; transform: scale(0.8) rotate(-5deg); }
-  100% { opacity: 1; transform: scale(1) rotate(0deg); }
-}
-.animate-pop-in {
-  animation: popIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-}
-
-/* ===== SHAKE ===== */
-@keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  25% { transform: translateX(-5px); }
-  75% { transform: translateX(5px); }
-}
-.animate-shake {
-  animation: shake 0.3s ease-in-out;
-}
-
-/* ===== PULSE ===== */
-.animate-pulse {
-  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-
-/* ===== SPIN TRANSITION ===== */
-.transition-all-5000 {
-  transition-duration: 5000ms;
-}
-
-/* ===== HIDE SCROLLBAR ===== */
-.hide-scroll::-webkit-scrollbar {
-  display: none;
-}
-.hide-scroll {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-
       `}</style>
 
       {/* --- AESTHETIC BACKGROUND BLOBS --- */}
@@ -1149,229 +1093,63 @@ function EditProductModal({ product, onClose }) {
 /* =========================================
    CART DRAWER (SMART DYNAMIC SCRATCH CARD)
 ========================================= */
-import React, { useState, useEffect, useRef } from 'react';
-
 function CartDrawer({ cart, setCart, user, setIsCartOpen, setIsAuthOpen, addToCart, removeFromCart, startTracking }) {
   const cartTotal = cart.reduce((total, item) => total + (item.price * item.quantity), 0);
   const inrTotal = parseFloat((cartTotal).toFixed(2));
-  const saved = (cartTotal * 0.15).toFixed(2);
+  const saved = (cartTotal * 0.15).toFixed(2); 
 
-  // ===== COUPON & WHEEL STATE =====
-  const [couponCode, setCouponCode] = useState('');
-  const [appliedCoupon, setAppliedCoupon] = useState(null);
-  const [couponError, setCouponError] = useState('');
-  const [couponSuccess, setCouponSuccess] = useState('');
-  
-  const [isSpinning, setIsSpinning] = useState(false);
-  const [spinResult, setSpinResult] = useState(null);
-  const [showWheel, setShowWheel] = useState(false);
-  const [wheelRotation, setWheelRotation] = useState(0);
+  const [scratched, setScratched] = useState(false);
+  const [winAmount, setWinAmount] = useState(0);
   const [discount, setDiscount] = useState(0);
+
+  useEffect(() => {
+    if (!scratched) {
+      // 🔥 BUG FIX: SMART BUSINESS LOGIC 🔥
+      // Max win amount ya toh ₹50 hoga, ya Cart ka Total (agar cart 50 se kam hai).
+      const maxWin = Math.min(50, Math.floor(inrTotal));
+      
+      // Amount 1 se maxWin ke beech generate hoga. Agar cart 0 hai to 0.
+      const luckyAmount = maxWin > 0 ? Math.floor(Math.random() * maxWin) + 1 : 0;
+      setWinAmount(luckyAmount);
+    }
+  }, [scratched]); // Yeh logic cart open hone pe sirf 1 baar set hoga
+
+  const handleScratch = () => {
+    setScratched(true);
+    setDiscount(winAmount);
+  };
+
+  // Safety Feature: Agar user scratch karne ke BAAD koi item cart se hata de 
+  // aur cart ka total discount se chhota ho jaye, tabhi hum discount adjust karenge.
+  const actualDiscount = scratched ? Math.min(discount, inrTotal) : 0;
   
-  const wheelRef = useRef(null);
-
-  // ===== PREMIUM COUPONS DATABASE =====
-  const validCoupons = {
-    'ZIPPY50': { 
-      code: 'ZIPPY50', 
-      discount: 50, 
-      type: 'flat', 
-      description: 'Flat ₹50 OFF',
-      minCart: 0,
-      icon: '💰'
-    },
-    'SAVE20': { 
-      code: 'SAVE20', 
-      discount: 20, 
-      type: 'percent', 
-      description: '20% OFF',
-      minCart: 0,
-      icon: '📉'
-    },
-    'WELCOME10': { 
-      code: 'WELCOME10', 
-      discount: 10, 
-      type: 'percent', 
-      description: '10% OFF',
-      minCart: 0,
-      icon: '🎁'
-    },
-    'FREEDEL': { 
-      code: 'FREEDEL', 
-      discount: 2, 
-      type: 'delivery', 
-      description: 'Free Delivery 🚚',
-      minCart: 0,
-      icon: '📦'
-    },
-    'ZIPPY100': { 
-      code: 'ZIPPY100', 
-      discount: 100, 
-      type: 'flat', 
-      description: '₹100 OFF on ₹500+',
-      minCart: 500,
-      icon: '🔥'
-    },
-  };
-
-  // ===== WHEEL SEGMENTS =====
-  const wheelSegments = [
-    { label: '50% OFF', color: '#FF6B6B', value: 50, type: 'percent' },
-    { label: '₹100 OFF', color: '#4ECDC4', value: 100, type: 'flat' },
-    { label: '20% OFF', color: '#FFD93D', value: 20, type: 'percent' },
-    { label: 'Free Delivery', color: '#6C5CE7', value: 2, type: 'delivery' },
-    { label: '10% OFF', color: '#A8E6CF', value: 10, type: 'percent' },
-    { label: 'Try Again', color: '#FF8A5C', value: 0, type: 'none' },
-    { label: '₹50 OFF', color: '#74B9FF', value: 50, type: 'flat' },
-    { label: '25% OFF', color: '#FD79A8', value: 25, type: 'percent' },
-  ];
-
-  // ===== SPIN WHEEL FUNCTION =====
-  const spinWheel = () => {
-    if (isSpinning) return;
-    setIsSpinning(true);
-    setSpinResult(null);
-    setShowWheel(true);
-
-    const randomIndex = Math.floor(Math.random() * wheelSegments.length);
-    const segmentAngle = 360 / wheelSegments.length;
-    const targetAngle = 360 * 5 + (360 - (randomIndex * segmentAngle + segmentAngle / 2));
-    
-    setWheelRotation(targetAngle);
-
-    setTimeout(() => {
-      const result = wheelSegments[randomIndex];
-      setSpinResult(result);
-      
-      // 🔥 SMART: Wheel result ko coupon ki tarah apply karo
-      if (result.value > 0 && result.type !== 'none') {
-        // Check if discount is valid for current cart
-        if (result.type === 'flat' && result.value >= inrTotal) {
-          setCouponError(`😅 Cart total (₹${inrTotal}) is less than discount (₹${result.value})`);
-          setDiscount(0);
-        } else {
-          setDiscount(result.value);
-          setCouponSuccess(`🎉 You won ${result.label}!`);
-        }
-      } else {
-        setCouponError('😅 Better luck next time!');
-        setTimeout(() => setCouponError(''), 3000);
-      }
-      
-      setIsSpinning(false);
-    }, 5000);
-  };
-
-  // ===== SMART COUPON APPLICATION =====
-  const applyCoupon = () => {
-    const coupon = validCoupons[couponCode.toUpperCase()];
-    
-    if (!couponCode.trim()) {
-      setCouponError('Please enter a coupon code');
-      return;
-    }
-
-    if (appliedCoupon) {
-      setCouponError('Coupon already applied');
-      return;
-    }
-
-    if (!coupon) {
-      setCouponError('❌ Invalid coupon code');
-      setTimeout(() => setCouponError(''), 3000);
-      return;
-    }
-
-    // 🔥 CHECK: Minimum cart value
-    if (coupon.minCart > 0 && inrTotal < coupon.minCart) {
-      setCouponError(`❌ Add ₹${coupon.minCart - inrTotal} more to use this coupon`);
-      setTimeout(() => setCouponError(''), 4000);
-      return;
-    }
-
-    // 🔥 CHECK: Flat discount cart se zyada toh nahi?
-    if (coupon.type === 'flat' && coupon.discount >= inrTotal) {
-      setCouponError(`❌ Cart total (₹${inrTotal}) is less than coupon discount (₹${coupon.discount})`);
-      setTimeout(() => setCouponError(''), 4000);
-      return;
-    }
-
-    // ✅ All validations passed
-    setAppliedCoupon(coupon);
-    setCouponSuccess(`✅ ${coupon.description} applied!`);
-    setCouponError('');
-    setCouponCode('');
-    setTimeout(() => setCouponSuccess(''), 3000);
-  };
-
-  // ===== REMOVE COUPON =====
-  const removeCoupon = () => {
-    setAppliedCoupon(null);
-    setDiscount(0);
-    setCouponSuccess('');
-    setCouponError('');
-  };
-
-  // ===== SMART DISCOUNT CALCULATION =====
-  const calculateDiscount = () => {
-    // Wheel discount pehle apply hoga (agar zyada hai toh)
-    let maxDiscount = 0;
-    
-    // Wheel discount
-    if (discount > 0) {
-      maxDiscount = Math.min(discount, inrTotal);
-    }
-    
-    // Coupon discount (jo zyada hai woh apply hoga)
-    if (appliedCoupon) {
-      let couponDiscount = 0;
-      if (appliedCoupon.type === 'flat') {
-        couponDiscount = Math.min(appliedCoupon.discount, inrTotal);
-      } else if (appliedCoupon.type === 'percent') {
-        couponDiscount = (inrTotal * appliedCoupon.discount) / 100;
-        couponDiscount = Math.min(couponDiscount, inrTotal);
-      } else if (appliedCoupon.type === 'delivery') {
-        couponDiscount = 0;
-      }
-      
-      // 🔥 Only apply coupon if it's better than wheel discount
-      if (couponDiscount > maxDiscount) {
-        return couponDiscount;
-      }
-    }
-    
-    return maxDiscount;
-  };
-
-  const actualDiscount = calculateDiscount();
   const deliveryFee = 2;
-  const finalDeliveryFee = (appliedCoupon?.type === 'delivery') ? 0 : deliveryFee;
-  const finalAmount = parseFloat((inrTotal - actualDiscount + finalDeliveryFee).toFixed(2));
+  const finalAmount = parseFloat((inrTotal - actualDiscount + deliveryFee).toFixed(2)); 
 
-  // ===== CHECKOUT =====
   const handleCheckout = async () => {
-    if (!user) { setIsCartOpen(false); setIsAuthOpen(true); return; }
+    if(!user) { setIsCartOpen(false); setIsAuthOpen(true); return; }
+    
     if (finalAmount <= 0) { alert("Invalid order amount."); return; }
 
     const res = await loadRazorpayScript();
-    if (!res) { alert("Razorpay SDK failed to load."); return; }
+    if (!res) { alert("Razorpay SDK failed to load. Are you online?"); return; }
 
     try {
-      const orderData = await fetch(`${API_URL}/payment/create-order`, {
-        method: 'POST',
+      const orderData = await fetch(`${API_URL}/payment/create-order`, { 
+        method: 'POST', 
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount: finalAmount })
+        body: JSON.stringify({ amount: finalAmount }) 
       }).then((t) => t.json());
 
-      if (!orderData || !orderData.id) { alert("Server error!"); return; }
+      if (!orderData || !orderData.id) { alert("Server error! Cannot start payment."); return; }
 
       const options = {
-        key: "rzp_test_T4Zw9v5VFk4BbP",
+        key: "rzp_test_T4Zw9v5VFk4BbP", 
         amount: orderData.amount,
         currency: orderData.currency,
         name: "Zippy Groceries",
-        description: `Coupon: ${appliedCoupon?.code || 'None'} | Discount: ₹${actualDiscount}`,
-        image: "https://images.unsplash.com/photo-1542838132-92c53300491e?w=100",
+        description: `Order total after ₹${actualDiscount} Scratch Discount`, 
+        image: "https://images.unsplash.com/photo-1542838132-92c53300491e?w=100", 
         order_id: orderData.id,
         handler: async function (response) {
           const verifyData = await fetch(`${API_URL}/payment/verify-payment`, {
@@ -1385,393 +1163,135 @@ function CartDrawer({ cart, setCart, user, setIsCartOpen, setIsAuthOpen, addToCa
           });
 
           if (verifyData.ok) {
-            await fetch(`${API_URL}/orders/place`, {
+            await fetch(`${API_URL}/orders/place`, { 
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
                 customerName: user.name,
-                totalAmount: finalAmount,
-                coupon: appliedCoupon?.code || null,
-                discount: actualDiscount,
-                cart: cart
+                totalAmount: finalAmount, 
+                cart: cart 
               })
             });
 
-            setCart([]);
+            setCart([]); 
             setIsCartOpen(false);
-            startTracking(response.razorpay_payment_id);
+            startTracking(response.razorpay_payment_id); 
+            
           } else {
             alert("Payment Verification Failed!");
           }
         },
         prefill: { name: user.name, email: user.email, contact: "9999999999" },
-        theme: { color: "#2563eb" }
+        theme: { color: "#2563eb" } 
       };
 
       const paymentObject = new window.Razorpay(options);
       paymentObject.open();
+
     } catch (error) { console.error(error); }
   };
 
   return (
-    <div className="fixed inset-0 z-[80] flex justify-end bg-black/60 backdrop-blur-sm transition-all duration-500">
+    <div className="fixed inset-0 z-[80] flex justify-end bg-gray-900/40 backdrop-blur-sm transition-opacity">
       <div className="absolute inset-0" onClick={() => setIsCartOpen(false)}></div>
-
-      {/* ===== DRAWER ===== */}
-      <div className="w-full max-w-[480px] bg-white h-full shadow-[-20px_0_60px_rgba(0,0,0,0.2)] flex flex-col relative z-10 animate-slide-in-right">
-        
-        {/* ===== HEADER ===== */}
-        <div className="bg-white px-6 py-5 flex items-center justify-between border-b border-gray-100/80 sticky top-0 z-20">
-          <div className="flex items-center gap-3">
-            <button 
-              onClick={() => setIsCartOpen(false)} 
-              className="text-gray-400 hover:text-gray-900 font-bold text-2xl w-10 h-10 rounded-full hover:bg-gray-100 flex items-center justify-center transition-all duration-300 cursor-pointer"
-            >
-              ×
-            </button>
-            <div>
-              <h2 className="text-xl font-black text-gray-900 tracking-tight">Your Cart</h2>
-              <p className="text-xs text-gray-400 font-medium">{cart.length} items</p>
-            </div>
-          </div>
-          
-          <div className="relative">
-            <div className="w-10 h-10 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-full flex items-center justify-center">
-              <span className="text-lg">🛒</span>
-            </div>
-            {cart.length > 0 && (
-              <span className="absolute -top-1 -right-1 w-5 h-5 bg-gradient-to-r from-blue-500 to-indigo-600 text-white text-[10px] font-black rounded-full flex items-center justify-center shadow-lg animate-bounce">
-                {cart.length}
-              </span>
-            )}
-          </div>
+      
+      <div className="w-full max-w-[420px] bg-[#fafafc] h-full shadow-[-20px_0_50px_rgba(0,0,0,0.1)] flex flex-col animate-fade-in-up relative z-10">
+        <div className="bg-white px-6 py-5 flex items-center border-b border-gray-100 shadow-sm sticky top-0 z-20">
+          <button onClick={() => setIsCartOpen(false)} className="text-gray-400 hover:text-gray-900 font-bold text-2xl mr-4 bg-gray-50 hover:bg-gray-100 w-10 h-10 rounded-full flex items-center justify-center transition-colors cursor-pointer">×</button>
+          <h2 className="text-xl font-black text-gray-900 tracking-tight">My Cart</h2>
         </div>
 
-        {/* ===== BODY ===== */}
-        <div className="flex-1 overflow-y-auto pb-32 hide-scroll px-4 py-4">
+        <div className="flex-1 overflow-y-auto pb-32 hide-scroll px-4">
           {cart.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-full text-center">
-              <div className="w-32 h-32 bg-gradient-to-br from-gray-50 to-gray-100 rounded-full flex items-center justify-center mb-6 shadow-inner animate-pulse">
+            <div className="flex flex-col items-center justify-center h-full text-gray-400">
+              <div className="w-32 h-32 bg-white rounded-full flex items-center justify-center mb-6 shadow-sm border border-gray-100">
                 <span className="text-6xl drop-shadow-md">🛒</span>
               </div>
-              <p className="font-black text-2xl text-gray-700 tracking-tight">Cart is empty</p>
-              <p className="text-gray-400 text-sm mt-2 font-medium">Add items to get started</p>
-              <button 
-                onClick={() => setIsCartOpen(false)}
-                className="mt-6 px-8 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-bold rounded-full shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
-              >
-                Browse Menu →
-              </button>
+              <p className="font-black text-xl text-gray-600 tracking-tight">Your cart is empty</p>
             </div>
           ) : (
-            <div className="py-2 space-y-5">
-              {/* SAVINGS BANNER */}
-              <div className="bg-gradient-to-r from-emerald-50 to-teal-50 text-emerald-700 text-xs font-black text-center py-3.5 rounded-2xl border border-emerald-100/50 shadow-sm uppercase tracking-wider flex items-center justify-center gap-2 animate-slide-down">
-                <span className="text-lg">🎉</span>
-                You saved <span className="text-emerald-600 text-sm">₹{saved}</span> today!
-              </div>
-
-              {/* ===== CART ITEMS ===== */}
-              <div className="bg-white rounded-2xl shadow-sm border border-gray-100/80 overflow-hidden">
+            <div className="py-4 space-y-5">
+              <div className="bg-green-50 text-green-700 text-xs font-black text-center py-3.5 rounded-2xl border border-green-100 shadow-sm uppercase tracking-wider">🎉 Yay! You saved ₹{saved}</div>
+              
+              <div className="bg-white rounded-[1.5rem] shadow-sm border border-gray-100 overflow-hidden studio-shadow">
                 {cart.map((item, index) => (
-                  <div key={item._id || item.id || index} className={`p-4 flex gap-4 items-center ${index !== cart.length - 1 ? 'border-b border-gray-50' : ''} hover:bg-gray-50/50 transition-colors duration-200 group`}>
-                    <div className={`w-16 h-16 bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl flex items-center justify-center border border-gray-100/80 group-hover:scale-105 transition-transform duration-300 ${item.category === 'Cafe' ? 'p-0 overflow-hidden' : 'p-2'}`}>
-                      <img src={getImgSrc(item.imagePath)} className={`w-full h-full ${item.category === 'Cafe' ? 'object-cover' : 'object-contain mix-blend-multiply'}`} alt={item.title} />
+                  <div key={item._id || item.id || index} className={`p-4 flex gap-4 items-center ${index !== cart.length -1 ? 'border-b border-gray-50' : ''}`}>
+                    <div className={`w-16 h-16 bg-gray-50 rounded-xl flex items-center justify-center border border-gray-100 ${item.category === 'Cafe' ? 'p-0 overflow-hidden' : 'p-2'}`}>
+                       <img src={getImgSrc(item.imagePath)} className={`w-full h-full ${item.category === 'Cafe' ? 'object-cover' : 'object-contain mix-blend-multiply'}`} alt={item.title} />
                     </div>
-                    
-                    <div className="flex-1 min-w-0">
+                    <div className="flex-1">
                       <h5 className="text-sm font-black text-gray-800 line-clamp-1">{item.title}</h5>
-                      <div className="flex items-center gap-2 mt-1">
+                      <div className="flex items-center gap-2 mt-1.5">
                         <span className="text-sm font-black text-gray-900">₹{item.price}</span>
                         <span className="text-[10px] text-gray-400 line-through font-bold">₹{(item.price*1.15).toFixed(0)}</span>
-                        <span className="text-[9px] text-emerald-600 font-black bg-emerald-50 px-1.5 py-0.5 rounded animate-pulse">15% OFF</span>
                       </div>
                     </div>
-                    
-                    <div className="flex items-center border border-gray-200 rounded-xl bg-gray-50 text-gray-900 font-black h-9 overflow-hidden shadow-inner flex-shrink-0">
-                      <button onClick={() => removeFromCart(item._id || item.id || item.title)} className="px-3 hover:bg-gray-200 transition h-full cursor-pointer text-lg active:scale-90 hover:text-red-500">−</button>
-                      <span className="px-2 text-xs min-w-[20px] text-center">{item.quantity}</span>
-                      <button onClick={() => addToCart(item)} className="px-3 hover:bg-gray-200 transition h-full cursor-pointer text-lg active:scale-90 hover:text-green-500">+</button>
+                    <div className="flex items-center border border-gray-200 rounded-xl bg-gray-50 text-gray-900 font-black h-9 overflow-hidden shadow-inner">
+                      <button onClick={() => removeFromCart(item._id || item.id || item.title)} className="px-3 hover:bg-gray-200 transition h-full cursor-pointer text-lg">−</button>
+                      <span className="px-2 text-xs">{item.quantity}</span>
+                      <button onClick={() => addToCart(item)} className="px-3 hover:bg-gray-200 transition h-full cursor-pointer text-lg">+</button>
                     </div>
                   </div>
                 ))}
               </div>
 
-              {/* ===== WHEEL OF FORTUNE ===== */}
-              <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 p-[2px] shadow-[0_10px_40px_rgba(79,70,229,0.25)]">
-                <div className="bg-white/5 backdrop-blur-xl p-5 rounded-2xl border border-white/10">
-                  <div className="flex items-center justify-between mb-4">
-                    <h4 className="font-black text-white text-sm flex items-center gap-2 drop-shadow-md">
-                      <span className="text-lg">🎡</span> Spin & Win
-                    </h4>
-                    <span className="text-[10px] font-bold text-white/60 uppercase tracking-wider bg-white/10 px-3 py-1 rounded-full animate-pulse">
-                      {isSpinning ? 'Spinning...' : 'Try Luck!'}
-                    </span>
-                  </div>
-
-                  {/* Wheel Container */}
-                  <div className="relative flex flex-col items-center">
-                    <div className="relative w-48 h-48 md:w-56 md:h-56">
-                      <div 
-                        ref={wheelRef}
-                        className="w-full h-full rounded-full transition-all duration-5000 ease-out"
-                        style={{
-                          transform: `rotate(${wheelRotation}deg)`,
-                          transition: isSpinning ? 'transform 5s cubic-bezier(0.17, 0.67, 0.12, 0.99)' : 'none',
-                          background: `conic-gradient(${wheelSegments.map((seg, i) => 
-                            `${seg.color} ${i * (360/wheelSegments.length)}deg ${(i+1) * (360/wheelSegments.length)}deg`
-                          ).join(', ')})`
-                        }}
-                      >
-                        {/* Center Pointer */}
-                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-12 h-12 bg-white rounded-full shadow-lg flex items-center justify-center z-10">
-                          <div className="w-8 h-8 bg-gradient-to-r from-indigo-500 to-pink-500 rounded-full flex items-center justify-center text-white font-black text-xs">
-                            WIN
-                          </div>
-                        </div>
-                        
-                        {/* Segment Labels */}
-                        {wheelSegments.map((seg, i) => {
-                          const angle = (i * (360/wheelSegments.length)) + (360/wheelSegments.length/2);
-                          const rad = (angle * Math.PI) / 180;
-                          const radius = 70;
-                          const x = 50 + (radius * Math.cos(rad));
-                          const y = 50 + (radius * Math.sin(rad));
-                          return (
-                            <div 
-                              key={i}
-                              className="absolute text-[7px] md:text-[8px] font-black text-white drop-shadow-md"
-                              style={{
-                                left: `${x}%`,
-                                top: `${y}%`,
-                                transform: 'translate(-50%, -50%) rotate(0deg)',
-                                textShadow: '0 1px 3px rgba(0,0,0,0.5)',
-                                pointerEvents: 'none'
-                              }}
-                            >
-                              {seg.label}
-                            </div>
-                          );
-                        })}
-                      </div>
-
-                      {/* Pointer Arrow */}
-                      <div className="absolute -top-2 left-1/2 -translate-x-1/2 z-20">
-                        <div className="w-0 h-0 border-l-[12px] border-l-transparent border-r-[12px] border-r-transparent border-t-[20px] border-t-white drop-shadow-lg"></div>
-                      </div>
-                    </div>
-
-                    {/* Spin Button */}
-                    <button
-                      onClick={spinWheel}
-                      disabled={isSpinning}
-                      className="mt-4 px-8 py-2.5 bg-gradient-to-r from-yellow-400 to-orange-500 text-white font-black rounded-full shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
-                    >
-                      {isSpinning ? (
-                        <span className="flex items-center gap-2">
-                          <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"/>
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"/>
-                          </svg>
-                          Spinning...
+              {/* 🎁 GAMIFICATION */}
+              <div className="bg-gradient-to-br from-indigo-600 to-purple-700 p-1 rounded-[1.5rem] shadow-[0_10px_20px_rgba(79,70,229,0.2)] relative overflow-hidden group">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-yellow-400/20 rounded-full blur-2xl pointer-events-none"></div>
+                <div className="bg-white/10 backdrop-blur-md p-5 rounded-[1.2rem] border border-white/20">
+                   <h4 className="font-black text-white text-sm mb-3 flex items-center gap-2 drop-shadow-md">
+                     ✨ Scratch & Win Discount!
+                   </h4>
+                   
+                   {!scratched ? (
+                     <div 
+                       onClick={handleScratch}
+                       className="w-full h-16 scratch-card-pattern rounded-xl cursor-pointer flex items-center justify-center relative overflow-hidden shadow-inner border-2 border-white/50 transform active:scale-95 transition-transform"
+                     >
+                        <div className="absolute inset-0 bg-white/20 group-hover:bg-white/0 transition-all"></div>
+                        <span className="text-gray-800 font-black tracking-widest text-xs drop-shadow-[0_2px_2px_rgba(255,255,255,0.8)] z-10 flex items-center gap-2">
+                           🪙 CLICK TO SCRATCH
                         </span>
-                      ) : '🎰 SPIN NOW'}
-                    </button>
-
-                    {/* Result Message */}
-                    {spinResult && (
-                      <div className={`mt-3 text-center animate-pop-in ${
-                        spinResult.value > 0 && spinResult.type !== 'none' ? 'text-yellow-300' : 'text-white/60'
-                      }`}>
-                        <span className="font-black text-sm">
-                          {spinResult.value > 0 && spinResult.type !== 'none' 
-                            ? `🎉 ${spinResult.label}!` 
-                            : '😅 Better luck next time!'}
-                        </span>
-                      </div>
-                    )}
-                  </div>
+                     </div>
+                   ) : (
+                     <div className="w-full h-16 bg-gradient-to-r from-green-400 to-emerald-500 rounded-xl flex items-center justify-center shadow-lg border border-white/50 animate-pop-in text-white relative overflow-hidden">
+                         <div className="absolute inset-0 bg-white opacity-20 bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:10px_10px]"></div>
+                         <span className="font-black text-base tracking-wide drop-shadow-md z-10 flex items-center gap-2">
+                           🎉 YOU WON ₹{winAmount} OFF!
+                         </span>
+                     </div>
+                   )}
                 </div>
               </div>
 
-              {/* ===== COUPON SECTION ===== */}
-              <div className="bg-white rounded-2xl shadow-sm border border-gray-100/80 overflow-hidden">
-                <div className="p-5">
-                  <h4 className="font-black text-sm text-gray-900 flex items-center gap-2 uppercase tracking-wider">
-                    <span className="text-lg">🎟️</span> Apply Coupon
-                  </h4>
-                </div>
-                
-                <div className="px-5 pb-5">
-                  {appliedCoupon ? (
-                    <div className="bg-gradient-to-r from-emerald-50 to-teal-50 p-4 rounded-xl border border-emerald-200 animate-slide-down">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <span className="font-black text-emerald-700 text-sm">{appliedCoupon.code}</span>
-                          <p className="text-xs text-emerald-600 font-medium">{appliedCoupon.description}</p>
-                        </div>
-                        <button 
-                          onClick={removeCoupon}
-                          className="text-red-500 hover:text-red-700 text-sm font-bold hover:scale-110 transition-transform"
-                        >
-                          ✕ Remove
-                        </button>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="flex gap-2">
-                      <div className="flex-1 relative">
-                        <input
-                          type="text"
-                          value={couponCode}
-                          onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
-                          placeholder="Enter coupon code"
-                          className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium text-gray-800 placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-300"
-                        />
-                        {couponError && (
-                          <p className="absolute -bottom-5 left-0 text-red-500 text-xs font-bold animate-shake">
-                            {couponError}
-                          </p>
-                        )}
-                      </div>
-                      <button
-                        onClick={applyCoupon}
-                        className="px-6 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-black rounded-xl shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 text-sm whitespace-nowrap"
-                      >
-                        Apply
-                      </button>
-                    </div>
-                  )}
-                  
-                  {/* Available Coupons with Conditions */}
-                  {!appliedCoupon && (
-                    <div className="mt-3 space-y-2">
-                      <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Available Coupons</p>
-                      <div className="flex flex-wrap gap-2">
-                        {Object.keys(validCoupons).map((key) => {
-                          const coupon = validCoupons[key];
-                          const isApplicable = coupon.minCart === 0 || inrTotal >= coupon.minCart;
-                          const isDiscountValid = coupon.type !== 'flat' || coupon.discount < inrTotal;
-                          const canApply = isApplicable && isDiscountValid;
-                          
-                          return (
-                            <button
-                              key={key}
-                              onClick={() => {
-                                if (canApply) {
-                                  setCouponCode(key);
-                                } else {
-                                  if (coupon.minCart > 0 && inrTotal < coupon.minCart) {
-                                    setCouponError(`Need ₹${coupon.minCart - inrTotal} more`);
-                                    setTimeout(() => setCouponError(''), 3000);
-                                  } else if (coupon.type === 'flat' && coupon.discount >= inrTotal) {
-                                    setCouponError(`Cart total less than discount`);
-                                    setTimeout(() => setCouponError(''), 3000);
-                                  }
-                                }
-                              }}
-                              className={`px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all duration-200 ${
-                                canApply 
-                                  ? 'bg-gray-100 hover:bg-gray-200 text-gray-700 cursor-pointer hover:scale-105' 
-                                  : 'bg-gray-50 text-gray-300 cursor-not-allowed opacity-60'
-                              }`}
-                              title={!canApply ? `Condition: ${coupon.minCart > 0 ? `Min ₹${coupon.minCart}` : ''} ${coupon.type === 'flat' ? '(Less than cart total)' : ''}` : ''}
-                            >
-                              {coupon.icon} {coupon.code}
-                              {coupon.minCart > 0 && (
-                                <span className="ml-1 text-[8px] text-orange-500">₹{coupon.minCart}+</span>
-                              )}
-                            </button>
-                          );
-                        })}
-                      </div>
-                      {couponError && couponError.includes('Need') && (
-                        <p className="text-red-500 text-xs font-bold animate-shake">{couponError}</p>
-                      )}
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* ===== BILL SUMMARY ===== */}
-              <div className="bg-white rounded-2xl shadow-sm border border-gray-100/80 overflow-hidden">
-                <div className="p-5">
-                  <h4 className="font-black text-sm text-gray-900 flex items-center gap-2 uppercase tracking-wider">
-                    <span className="text-lg">📄</span> Bill Summary
-                  </h4>
-                </div>
-                <div className="px-5 pb-5 space-y-3 text-sm font-bold">
-                  <div className="flex justify-between items-center py-2 border-b border-gray-50">
-                    <span className="text-gray-500 font-medium">Item Total</span>
-                    <span className="text-gray-900">₹{inrTotal}</span>
-                  </div>
-                  <div className="flex justify-between items-center py-2 border-b border-gray-50">
-                    <span className="text-gray-500 font-medium">Delivery Fee</span>
-                    <span className={`${finalDeliveryFee === 0 ? 'text-emerald-600 line-through' : 'text-gray-900'}`}>
-                      {finalDeliveryFee === 0 ? (
-                        <span className="flex items-center gap-1">
-                          <span className="line-through text-gray-400">₹{deliveryFee}</span>
-                          <span className="text-emerald-600">FREE</span>
-                        </span>
-                      ) : (
-                        `₹${deliveryFee}`
-                      )}
-                    </span>
-                  </div>
+              <div className="bg-white p-6 rounded-[1.5rem] shadow-sm border border-gray-100 studio-shadow">
+                <h4 className="font-black text-sm text-gray-900 mb-5 flex items-center gap-2 uppercase tracking-wider">📄 Bill Summary</h4>
+                <div className="space-y-4 text-sm font-bold text-gray-500">
+                  <div className="flex justify-between"><span>Item Total</span><span className="text-gray-800">₹{inrTotal}</span></div>
+                  <div className="flex justify-between border-b border-gray-100 pb-4"><span>Delivery Fee</span><span className="text-gray-800">₹{deliveryFee}</span></div>
                   
                   {actualDiscount > 0 && (
-                    <div className="flex justify-between items-center py-2 bg-emerald-50/50 px-3 rounded-xl -mx-3 border border-emerald-100/50 animate-slide-down">
-                      <span className="text-emerald-700 font-black flex items-center gap-1.5">
-                        <span className="text-sm">🎟️</span> Discount Applied
-                      </span>
-                      <span className="text-emerald-700 font-black">-₹{actualDiscount}</span>
-                    </div>
+                     <div className="flex justify-between text-green-600 bg-green-50 p-3 rounded-xl border border-green-100 animate-fade-in-up">
+                        <span className="flex items-center gap-1 font-black">🎟️ Lucky Discount</span>
+                        <span className="font-black">-₹{actualDiscount}</span>
+                     </div>
                   )}
 
-                  <div className="flex justify-between items-center pt-3 border-t-2 border-gray-100">
-                    <span className="text-base font-black text-gray-900">Total</span>
-                    <span className={`text-xl font-black transition-all duration-300 ${
-                      finalAmount === 0 
-                        ? 'text-emerald-600 animate-pulse' 
-                        : 'text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600'
-                    }`}>
-                      ₹{finalAmount}
-                    </span>
+                  <div className="flex justify-between text-lg font-black text-gray-900 pt-1">
+                    <span>To Pay</span>
+                    <span className="text-blue-600 drop-shadow-sm">₹{finalAmount}</span>
                   </div>
-                  
-                  {finalAmount === 0 && (
-                    <div className="text-center text-emerald-600 text-xs font-black animate-bounce">
-                      🎉 Your order is FREE!
-                    </div>
-                  )}
                 </div>
               </div>
             </div>
           )}
         </div>
 
-        {/* ===== CHECKOUT BUTTON ===== */}
         {cart.length > 0 && (
-          <div className="absolute bottom-0 w-full bg-white/95 backdrop-blur-xl p-5 border-t border-gray-100/80 shadow-[-20px_0_40px_rgba(0,0,0,0.05)] z-30">
-            <button 
-              onClick={handleCheckout} 
-              className={`w-full text-white font-black py-4 rounded-2xl transition-all duration-300 flex justify-between items-center px-6 text-base group ${
-                finalAmount === 0 
-                  ? 'bg-gradient-to-r from-emerald-500 to-teal-500 shadow-[0_10px_30px_rgba(16,185,129,0.3)] hover:shadow-[0_15px_40px_rgba(16,185,129,0.4)]' 
-                  : 'bg-gradient-to-r from-blue-600 to-indigo-600 shadow-[0_10px_30px_rgba(79,70,229,0.3)] hover:shadow-[0_15px_40px_rgba(79,70,229,0.4)]'
-              } hover:-translate-y-1`}
-            >
-              <span className="flex items-center gap-2">
-                {user ? (
-                  finalAmount === 0 ? '🎉 FREE Order!' : '🛍️ Proceed to Pay'
-                ) : (
-                  '🔐 Login to Proceed'
-                )}
-              </span>
-              <span className="flex items-center gap-2">
-                {finalAmount > 0 && `₹${finalAmount}`}
-                <span className="text-lg transition-transform duration-300 group-hover:translate-x-1">→</span>
-              </span>
+          <div className="absolute bottom-0 w-full bg-white/90 backdrop-blur-xl p-5 border-t border-gray-100 shadow-[0_-20px_40px_rgba(0,0,0,0.05)] z-30">
+            <button onClick={handleCheckout} className="w-full bg-gray-900 text-white font-black py-4 md:py-5 rounded-2xl shadow-[0_10px_20px_rgba(0,0,0,0.15)] hover:bg-black hover:-translate-y-1 transition-all flex justify-between px-8 text-base md:text-lg cursor-pointer">
+               <span>{user ? 'Proceed to Pay' : 'Login to Proceed'}</span>
+               <span>₹{finalAmount} <span className="ml-2 font-normal">→</span></span>
             </button>
           </div>
         )}
