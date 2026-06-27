@@ -759,60 +759,156 @@ const filteredProducts = activeTheme === 'All'
       {/* 1. DYNAMIC COLOR HEADER SECTION */}
       <div className={`w-full transition-colors duration-500 rounded-b-[2rem] md:rounded-none shadow-md ${currentTheme.bg}`}>
         
-        {/* Mobile Header Elements */}
-        <div className="md:hidden px-4 pt-4 pb-2 text-white">
-           <div className="flex justify-between items-center mb-4">
-              <div onClick={() => setIsChangingLocation(true)} className="cursor-pointer">
-                 <h2 className="font-black text-[28px] tracking-tight leading-none mb-1 drop-shadow-sm">15 mins</h2>
-                 <p className="text-xs font-bold opacity-90 truncate max-w-[250px] flex items-center gap-1 drop-shadow-sm">
-                   To {location} <span className="text-[10px]">▼</span>
-                 </p>
-              </div>
-              <div onClick={() => !user ? setIsAuthOpen(true) : setView('account')} className="w-10 h-10 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-xl shadow-inner border border-white/30 cursor-pointer hover:bg-white/30 transition">
-                 {user ? <span className="text-sm font-black text-white uppercase">{user.name.charAt(0)}</span> : '👤'}
-              </div>
-           </div>
-           
-           {/* MOBILE SMART SEARCH BAR */}
-           <div className="relative z-50">
-             <div className="bg-white rounded-2xl px-4 py-3.5 flex items-center shadow-md border focus-within:border-blue-400 transition-all">
-                <svg 
-  className="w-5 h-5 text-gray-400 mr-3" 
-  fill="none" 
-  stroke="currentColor" 
-  viewBox="0 0 24 24"
->
-  <path 
-    strokeLinecap="round" 
-    strokeLinejoin="round" 
-    strokeWidth="2.5" 
-    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" 
-  />
-</svg>
-                <input type="text" placeholder="Search for 'Protein Atta'" value={searchQuery} onChange={handleSearchChange} onFocus={() => searchQuery && setShowSuggestions(true)} onBlur={() => setTimeout(() => setShowSuggestions(false), 200)} className="w-full bg-transparent ml-2 outline-none text-sm text-gray-900 font-bold placeholder-gray-400" />
-             </div>
-             
-             {/* MOBILE LIVE SUGGESTIONS */}
-             {showSuggestions && searchSuggestions.length > 0 && (
-                <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden py-2">
-                   {searchSuggestions.map(item => (
-                      <div key={item._id} onClick={() => { openProduct(item); setSearchQuery(''); setShowSuggestions(false); }} className="px-4 py-3 hover:bg-gray-50 border-b last:border-b-0 border-gray-100 cursor-pointer flex items-center justify-between">
-                         <div className="flex items-center gap-3">
-                            <img 
-                 src={item.imagePath.startsWith('http') ? item.imagePath : getImgSrc(item.imagePath)} 
-                 className="w-8 h-8 object-contain mix-blend-multiply" 
-                 alt=""
-                 onError={(e) => e.target.src='https://via.placeholder.com/50'} 
-               />
-                            <p className="text-xs font-black text-gray-800">{item.title}</p>
-                         </div>
-                         <span className="text-xs font-black text-blue-600">₹{item.price}</span>
-                      </div>
-                   ))}
-                </div>
-             )}
-           </div>
+        {/* ===== MODERN SEARCH BAR WITH HISTORY ===== */}
+<div className="md:hidden px-4 pt-4 pb-2 text-white">
+  <div className="flex justify-between items-center mb-4">
+    <div onClick={() => setIsChangingLocation(true)} className="cursor-pointer">
+      <h2 className="font-black text-[28px] tracking-tight leading-none mb-1 drop-shadow-sm">15 mins</h2>
+      <p className="text-xs font-bold opacity-90 truncate max-w-[250px] flex items-center gap-1 drop-shadow-sm">
+        To {location} <span className="text-[10px]">▼</span>
+      </p>
+    </div>
+    <div onClick={() => !user ? setIsAuthOpen(true) : setView('account')} className="w-10 h-10 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-xl shadow-inner border border-white/30 cursor-pointer hover:bg-white/30 transition">
+      {user ? <span className="text-sm font-black text-white uppercase">{user.name.charAt(0)}</span> : '👤'}
+    </div>
+  </div>
+  
+  {/* ===== MODERN SEARCH BAR ===== */}
+  <div className="relative z-50">
+    <div className="bg-white rounded-2xl px-4 py-3.5 flex items-center shadow-md border focus-within:border-blue-400 transition-all">
+      
+      {/* Left: Auto-Rotating Placeholder */}
+      <div className="relative flex-1 overflow-hidden h-5">
+        <input 
+          type="text" 
+          value={searchQuery}
+          onChange={handleSearchChange}
+          onFocus={() => searchQuery && setShowSuggestions(true)}
+          onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+          className="w-full bg-transparent outline-none text-sm text-gray-900 font-bold placeholder-transparent"
+          placeholder=""
+        />
+        
+        {/* Animated Placeholder Text */}
+        {!searchQuery && (
+          <div className="absolute inset-0 flex items-center pointer-events-none overflow-hidden">
+            <div className="animate-slide-up-words whitespace-nowrap text-sm text-gray-400 font-medium">
+              {searchPlaceholders.map((text, index) => (
+                <span 
+                  key={index} 
+                  className={`block transition-all duration-500 ${
+                    index === currentPlaceholderIndex ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4'
+                  }`}
+                  style={{ height: '20px', lineHeight: '20px' }}
+                >
+                  {text}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+      
+      {/* Right: Search SVG Icon Button */}
+      <button 
+        onClick={() => {
+          if (searchQuery.trim()) {
+            handleSearch(searchQuery);
+          }
+        }}
+        className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center text-white shadow-md hover:shadow-lg hover:scale-105 transition-all duration-300 flex-shrink-0 ml-2"
+      >
+        <svg 
+          className="w-4 h-4" 
+          fill="none" 
+          stroke="currentColor" 
+          viewBox="0 0 24 24"
+        >
+          <path 
+            strokeLinecap="round" 
+            strokeLinejoin="round" 
+            strokeWidth="2.5" 
+            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" 
+          />
+        </svg>
+      </button>
+    </div>
+
+    {/* ===== SEARCH SUGGESTIONS DROPDOWN ===== */}
+    {showSuggestions && (
+      <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-xl border border-gray-100/80 overflow-hidden z-50">
+        
+        {/* Search History Section */}
+        {searchHistory.length > 0 && (
+          <div className="p-3">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
+                {/* History SVG Icon */}
+                <svg className="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Recent Searches
+              </span>
+              <button 
+                onClick={clearHistory}
+                className="text-[10px] text-red-400 hover:text-red-600 font-bold transition-colors"
+              >
+                Clear All
+              </button>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {searchHistory.map((item, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => {
+                    setSearchQuery(item);
+                    handleSearch(item);
+                    setShowSuggestions(false);
+                  }}
+                  className="px-3 py-1.5 bg-gray-50 hover:bg-gray-100 rounded-full text-xs font-medium text-gray-700 transition-all duration-200 hover:scale-105 flex items-center gap-1.5"
+                >
+                  {/* Small Search SVG Icon */}
+                  <svg className="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                  {item}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+        
+        {/* Trending/Suggestions */}
+        <div className="p-3 border-t border-gray-50">
+          <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1.5 mb-2">
+            {/* Trending SVG Icon */}
+            <svg className="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+            Trending
+          </span>
+          <div className="flex flex-wrap gap-2">
+            {trendingSearches.map((item, idx) => (
+              <button
+                key={idx}
+                onClick={() => {
+                  setSearchQuery(item);
+                  handleSearch(item);
+                  setShowSuggestions(false);
+                }}
+                className="px-3 py-1.5 bg-gradient-to-r from-blue-50 to-purple-50 hover:from-blue-100 hover:to-purple-100 rounded-full text-xs font-medium text-gray-700 transition-all duration-200 hover:scale-105 flex items-center gap-1.5 border border-blue-100/50"
+              >
+                <span className="text-sm">{trendingEmojis[idx]}</span>
+                {item}
+              </button>
+            ))}
+          </div>
         </div>
+        
+      </div>
+    )}
+  </div>
+</div>
 
         <div className="max-w-[1400px] mx-auto">
         {/* CATEGORY NAV */}
