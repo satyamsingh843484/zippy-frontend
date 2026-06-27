@@ -39,6 +39,79 @@ export default function App() {
     return 'home';
   });
 
+  // ===== SEARCH STATE =====
+const [searchQuery, setSearchQuery] = useState('');
+const [showSuggestions, setShowSuggestions] = useState(false);
+const [searchHistory, setSearchHistory] = useState(() => {
+  try {
+    const saved = localStorage.getItem('searchHistory');
+    return saved ? JSON.parse(saved) : [];
+  } catch {
+    return [];
+  }
+});
+const [currentPlaceholderIndex, setCurrentPlaceholderIndex] = useState(0);
+
+// ===== 🔥 YEH VARIABLES ADD KARO =====
+const searchPlaceholders = [
+  'Search for Protein Atta',
+  'Fresh Fruits & Vegetables',
+  'Electronics & Gadgets',
+  'Fashion & Accessories',
+  'Home & Kitchen Items',
+  'Beauty & Personal Care',
+  'Baby & Kids Products',
+  'Groceries & Essentials'
+];
+
+const trendingSearches = [
+  'Protein Atta', 'Organic Vegetables', 'Smartphones', 
+  'T-Shirts', 'Lipstick', 'Home Decor', 'Toys',
+  'Rice', 'Chicken', 'Face Cream'
+];
+
+const trendingEmojis = ['💪', '🥬', '📱', '👕', '💄', '🏠', '🧸', '🍚', '🍗', '🧴'];
+
+// ===== PLACEHOLDER ROTATION =====
+useEffect(() => {
+  if (!searchQuery) {
+    const interval = setInterval(() => {
+      setCurrentPlaceholderIndex((prev) => (prev + 1) % searchPlaceholders.length);
+    }, 2500);
+    return () => clearInterval(interval);
+  }
+}, [searchQuery]);
+
+// ===== SEARCH HANDLERS =====
+const handleSearchChange = (e) => {
+  setSearchQuery(e.target.value);
+  if (e.target.value) {
+    setShowSuggestions(true);
+  } else {
+    setShowSuggestions(false);
+  }
+};
+
+const handleSearch = (query) => {
+  if (!query.trim()) return;
+  
+  setSearchHistory(prev => {
+    const newHistory = [query, ...prev.filter(item => item !== query)];
+    const limited = newHistory.slice(0, 10);
+    localStorage.setItem('searchHistory', JSON.stringify(limited));
+    return limited;
+  });
+  
+  console.log('Searching for:', query);
+  setShowSuggestions(false);
+};
+
+const clearHistory = () => {
+  setSearchHistory([]);
+  localStorage.removeItem('searchHistory');
+  setShowSuggestions(false);
+};
+
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
