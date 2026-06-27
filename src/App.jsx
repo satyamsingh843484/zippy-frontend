@@ -553,40 +553,30 @@ export default function App() {
    ULTRA-PREMIUM BENTO BOX CATEGORIES
 ========================================= */
 function CategoriesView({ setView, setActiveCategory }) {
-  // 🔥 FEATURE 1: Advanced Data with Offers & Trending Tags
-  // 🔥 FEATURE 1: Advanced Data with Offers & Trending Tags (Fixed 100% Working Images)
   const CATEGORIES_DATA = [
     { name: 'Fresh', icon: '🥑', img: 'https://images.unsplash.com/photo-1610832958506-aa56368176cf?auto=format&fit=crop&w=600&q=80', items: '120+ Items', trending: true, offer: 'Up to 20% Off', bg: 'bg-emerald-50', text: 'text-emerald-700' },
     { name: 'Grocery', icon: '🌾', img: 'https://images.unsplash.com/photo-1628088062854-d1870b4553da?auto=format&fit=crop&w=600&q=80', items: '450+ Items', trending: false, offer: 'Free Delivery', bg: 'bg-amber-50', text: 'text-amber-700' },
     { name: 'Electronics', icon: '🎧', img: 'https://images.unsplash.com/photo-1498049794561-7780e7231661?auto=format&fit=crop&w=600&q=80', items: '85+ Items', trending: true, offer: 'New Arrivals', bg: 'bg-blue-50', text: 'text-blue-700' },
     { name: 'Fashion', icon: '👕', img: 'https://images.unsplash.com/photo-1445205170230-053b83016050?auto=format&fit=crop&w=600&q=80', items: '320+ Items', trending: false, offer: 'Flat 50% Off', bg: 'bg-pink-50', text: 'text-pink-700' },
-    
-    // 👇 FIX: Luxury Beauty & Makeup Image (Stable Link)
-    { name: 'Beauty', icon: '💄', img: 'https://images.unsplash.com/photo-1512496015851-a1fb8fc453cb?auto=format&fit=crop&w=600&q=80', items: '150+ Items', trending: true, offer: 'Buy 1 Get 1', bg: 'bg-rose-50', text: 'text-rose-700' },
-    
+    { name: 'Beauty', icon: '💄', img: 'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=600&q=80', items: '150+ Items', trending: true, offer: 'Buy 1 Get 1', bg: 'bg-rose-50', text: 'text-rose-700' },
     { name: 'Home', icon: '🛋️', img: 'https://images.unsplash.com/photo-1583947215259-38e31be8751f?auto=format&fit=crop&w=600&q=80', items: '90+ Items', trending: false, offer: null, bg: 'bg-teal-50', text: 'text-teal-700' },
     { name: 'Kids', icon: '🧸', img: 'https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?auto=format&fit=crop&w=600&q=80', items: '210+ Items', trending: false, offer: 'Extra 10% Off', bg: 'bg-purple-50', text: 'text-purple-700' },
     { name: '50% Off Zone', icon: '🏷️', img: 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?auto=format&fit=crop&w=600&q=80', items: 'Clearance', trending: true, offer: 'Mega Sale', bg: 'bg-red-50', text: 'text-red-700' },
     { name: 'School Time', icon: '🎒', img: 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&w=600&q=80', items: '60+ Items', trending: false, offer: null, bg: 'bg-indigo-50', text: 'text-indigo-700' },
-    
-    // 👇 FIX: Premium Father's Day Aesthetic (Stable Link)
-    { name: "Father's Day", icon: '👨', img: 'https://images.unsplash.com/photo-1505086786622-77114660ebbc?auto=format&fit=crop&w=600&q=80', items: 'Gifts', trending: true, offer: 'Special Combo', bg: 'bg-gray-100', text: 'text-gray-800' },
+    { name: "Father's Day", icon: '👨', img: 'https://images.unsplash.com/photo-1618077347084-5c4f1471077e?auto=format&fit=crop&w=600&q=80', items: 'Gifts', trending: true, offer: 'Special Combo', bg: 'bg-gray-100', text: 'text-gray-800' },
   ];
 
-  // 🔥 FEATURE 2: Search & Filter States
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState('All');
 
   const filters = ['All', '🔥 Trending', '🎁 Offers', '🆕 New'];
 
-  // Smart Filtering Logic
   const filteredCategories = CATEGORIES_DATA.filter(cat => {
     const matchesSearch = cat.name.toLowerCase().includes(searchQuery.toLowerCase());
     if (!matchesSearch) return false;
-    
     if (activeFilter === '🔥 Trending') return cat.trending;
     if (activeFilter === '🎁 Offers') return cat.offer !== null;
-    return true; // 'All' or 'New'
+    return true; 
   });
 
   const trendingCategories = CATEGORIES_DATA.filter(cat => cat.trending);
@@ -597,35 +587,30 @@ function CategoriesView({ setView, setActiveCategory }) {
   };
 
   return (
-    <div className="max-w-[1400px] mx-auto pt-2 pb-40 animate-fade-in-up relative z-10 bg-[#fcfcfc] min-h-screen">
+    // 🔥 Added will-change-scroll for smoother page scrolling
+    <div className="max-w-[1400px] mx-auto pt-2 pb-40 animate-fade-in-up relative z-10 bg-[#fcfcfc] min-h-screen will-change-scroll">
       
-      {/* 🚀 FEATURE 3: Glassmorphic Sticky Header + Search Bar */}
-      <div className="sticky top-0 z-30 bg-white/80 backdrop-blur-xl pt-6 pb-4 px-4 md:px-8 border-b border-gray-100 shadow-[0_10px_30px_rgba(0,0,0,0.02)]">
+      {/* Reduced backdrop-blur level for performance and added transform-gpu */}
+      <div className="sticky top-0 z-30 bg-white/90 backdrop-blur-md pt-6 pb-4 px-4 md:px-8 border-b border-gray-100 shadow-sm transform-gpu">
         <div className="flex justify-between items-center mb-5">
           <div className="flex items-center gap-4">
             <button 
               onClick={() => setView('home')} 
-              className="w-11 h-11 bg-white rounded-full flex items-center justify-center shadow-sm border border-gray-200 font-bold text-xl hover:bg-gray-50 active:scale-90 transition-all cursor-pointer text-gray-700"
+              className="w-11 h-11 bg-white rounded-full flex items-center justify-center shadow-sm border border-gray-200 font-bold text-xl hover:bg-gray-50 active:scale-90 transition-transform cursor-pointer text-gray-700"
             >
               ←
             </button>
             <div>
               <h1 className="text-2xl md:text-3xl font-black text-gray-900 tracking-tight leading-none">
-                Aisles
+                Curations
               </h1>
               <p className="text-[11px] md:text-xs font-bold text-gray-400 mt-1 uppercase tracking-widest">
                 Discover what you need
               </p>
             </div>
           </div>
-          {/* Decorative Elements */}
-          <div className="hidden md:flex gap-2">
-            <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
-            <span className="w-2 h-2 rounded-full bg-purple-500 animate-pulse delay-75"></span>
-          </div>
         </div>
 
-        {/* 🔍 Search Bar */}
         <div className="relative w-full group">
           <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
             <svg className="h-5 w-5 text-gray-400 group-focus-within:text-[#005af0] transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -634,22 +619,21 @@ function CategoriesView({ setView, setActiveCategory }) {
           </div>
           <input
             type="text"
-            placeholder="Search for categories (e.g., Fresh, Electronics)..."
+            placeholder="Search for categories..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full bg-gray-100/80 border-2 border-transparent focus:border-[#005af0]/30 focus:bg-white text-gray-900 text-sm font-bold rounded-2xl pl-11 pr-4 py-3.5 outline-none transition-all duration-300 shadow-inner placeholder-gray-400"
           />
         </div>
 
-        {/* 🏷️ Filter Pills */}
-        <div className="flex gap-2 mt-4 overflow-x-auto hide-scroll pb-1">
+        <div className="flex gap-2 mt-4 overflow-x-auto hide-scroll pb-1" style={{ WebkitOverflowScrolling: 'touch' }}>
           {filters.map(filter => (
             <button
               key={filter}
               onClick={() => setActiveFilter(filter)}
               className={`whitespace-nowrap px-5 py-2 rounded-full text-xs font-black tracking-wide transition-all duration-300 active:scale-95 border ${
                 activeFilter === filter 
-                  ? 'bg-[#005af0] text-white border-[#005af0] shadow-[0_8px_20px_rgba(0,90,240,0.25)]' 
+                  ? 'bg-[#005af0] text-white border-[#005af0] shadow-md' 
                   : 'bg-white text-gray-500 border-gray-200 hover:bg-gray-50'
               }`}
             >
@@ -661,26 +645,26 @@ function CategoriesView({ setView, setActiveCategory }) {
 
       <div className="px-4 md:px-8 pt-6">
         
-        {/* 🌟 FEATURE 4: VIP Trending Scroll (Only visible when 'All' is selected and no search) */}
         {activeFilter === 'All' && searchQuery === '' && (
           <div className="mb-10">
             <h2 className="text-lg font-black text-gray-900 mb-4 flex items-center gap-2">
               🔥 Trending Right Now
             </h2>
-            <div className="flex gap-4 overflow-x-auto hide-scroll pb-6 -mx-4 px-4 md:mx-0 md:px-0">
+            <div className="flex gap-4 overflow-x-auto hide-scroll pb-6 -mx-4 px-4 md:mx-0 md:px-0" style={{ WebkitOverflowScrolling: 'touch' }}>
               {trendingCategories.map((cat, i) => (
                 <div 
                   key={`trend-${i}`}
                   onClick={() => handleCategoryClick(cat.name)}
-                  className="min-w-[260px] md:min-w-[300px] h-[160px] relative rounded-[1.5rem] overflow-hidden group cursor-pointer shadow-sm border border-gray-100 active:scale-[0.97] transition-transform flex-shrink-0"
+                  className="min-w-[260px] md:min-w-[300px] h-[160px] relative rounded-[1.5rem] overflow-hidden group cursor-pointer shadow-sm border border-gray-100 active:scale-[0.97] transition-transform flex-shrink-0 transform-gpu"
                 >
-                  <img src={cat.img} alt={cat.name} className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                  {/* Added loading="lazy" for performance */}
+                  <img src={cat.img} loading="lazy" alt={cat.name} className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 transform-gpu" />
                   <div className="absolute inset-0 bg-gradient-to-r from-gray-900/90 via-gray-900/40 to-transparent"></div>
                   
                   <div className="absolute inset-0 p-5 flex flex-col justify-between">
                     <div className="flex justify-between items-start">
-                      <span className="text-3xl drop-shadow-md bg-white/20 backdrop-blur-md w-12 h-12 flex items-center justify-center rounded-2xl border border-white/20">{cat.icon}</span>
-                      {cat.offer && <span className="bg-red-500 text-white text-[9px] font-black uppercase px-2 py-1 rounded-lg shadow-lg animate-pulse">{cat.offer}</span>}
+                      <span className="text-3xl drop-shadow-md bg-white/90 w-12 h-12 flex items-center justify-center rounded-2xl">{cat.icon}</span>
+                      {cat.offer && <span className="bg-red-500 text-white text-[9px] font-black uppercase px-2 py-1 rounded-lg shadow-sm">{cat.offer}</span>}
                     </div>
                     <div>
                       <h3 className="text-white font-black text-2xl drop-shadow-md">{cat.name}</h3>
@@ -693,16 +677,14 @@ function CategoriesView({ setView, setActiveCategory }) {
           </div>
         )}
 
-        {/* 🧊 FEATURE 5: Zippy Main Grid (New Modern Layered Cards) */}
         <h2 className="text-lg font-black text-gray-900 mb-4">
-          {searchQuery ? 'Search Results' : (activeFilter === 'All' ? 'All Aisles' : activeFilter)}
+          {searchQuery ? 'Search Results' : (activeFilter === 'All' ? 'All Curations' : activeFilter)}
         </h2>
         
         {filteredCategories.length === 0 ? (
           <div className="text-center py-20">
             <span className="text-6xl mb-4 block">🔍</span>
             <h3 className="text-xl font-black text-gray-800">No categories found</h3>
-            <p className="text-gray-500 font-bold text-sm mt-2">Try searching for something else!</p>
           </div>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
@@ -710,26 +692,23 @@ function CategoriesView({ setView, setActiveCategory }) {
               <div 
                 key={i} 
                 onClick={() => handleCategoryClick(cat.name)}
-                className="relative bg-white rounded-[1.5rem] p-3 md:p-4 hover:shadow-[0_20px_40px_rgba(0,0,0,0.06)] transition-all duration-300 cursor-pointer group border border-gray-100 active:scale-[0.97] flex flex-col h-[220px] md:h-[260px] overflow-hidden"
+                className="relative bg-white rounded-[1.5rem] p-3 md:p-4 hover:shadow-lg transition-shadow duration-300 cursor-pointer group border border-gray-100 active:scale-[0.97] flex flex-col h-[220px] md:h-[260px] overflow-hidden transform-gpu will-change-transform"
               >
-                {/* Top Half: Image inside a nested rounded box */}
                 <div className={`w-full h-32 md:h-40 rounded-2xl overflow-hidden relative mb-3 ${cat.bg}`}>
-                  <img src={cat.img} alt={cat.name} className="w-full h-full object-cover mix-blend-overlay opacity-80 group-hover:scale-110 transition-transform duration-700" />
+                  {/* 🔥 REMOVED mix-blend-overlay - This was causing the jitter! */}
+                  <img src={cat.img} loading="lazy" alt={cat.name} className="w-full h-full object-cover opacity-85 group-hover:scale-105 transition-transform duration-500 transform-gpu" />
                   
-                  {/* Floating Icon */}
-                  <div className="absolute top-3 left-3 w-8 h-8 md:w-10 md:h-10 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-sm border border-gray-100">
+                  <div className="absolute top-3 left-3 w-8 h-8 md:w-10 md:h-10 bg-white rounded-full flex items-center justify-center shadow-sm">
                     <span className="text-base md:text-lg">{cat.icon}</span>
                   </div>
 
-                  {/* Offer Badge inside Image */}
                   {cat.offer && (
-                    <div className="absolute bottom-3 left-3 bg-gray-900/80 backdrop-blur-md text-white text-[9px] font-black px-2 py-1 rounded-lg border border-white/10 uppercase tracking-wide">
+                    <div className="absolute bottom-3 left-3 bg-gray-900/90 text-white text-[9px] font-black px-2 py-1 rounded-lg uppercase tracking-wide">
                       {cat.offer}
                     </div>
                   )}
                 </div>
 
-                {/* Bottom Half: Text Info */}
                 <div className="flex-1 flex flex-col justify-end px-1">
                   <h3 className="font-black text-gray-900 text-base md:text-lg tracking-tight group-hover:text-[#005af0] transition-colors line-clamp-1">{cat.name}</h3>
                   <div className="flex justify-between items-center mt-1">
@@ -739,9 +718,6 @@ function CategoriesView({ setView, setActiveCategory }) {
                     </div>
                   </div>
                 </div>
-                
-                {/* Active Hover Border Effect */}
-                <div className="absolute inset-0 border-2 border-transparent group-hover:border-[#005af0]/10 rounded-[1.5rem] pointer-events-none transition-colors"></div>
               </div>
             ))}
           </div>
