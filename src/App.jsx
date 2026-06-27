@@ -97,52 +97,7 @@ export default function App() {
 
   // 👆👆 IS LINE KE THEEK UPAR 👆👆
   
-  useEffect(() => {
-    setTimeout(() => {
-      fetch(`${API_URL}/products/all`)
-        .then(res => res.json())
-        .then(data => { setProducts(data); setIsLoading(false); })
-        .catch(err => { console.error(err); setIsLoading(false); });
-    }, 800); 
-    detectLocation();
-  }, []);
 
-  const detectLocation = () => {
-    setLocation("Detecting...");
-    if ("geolocation" in navigator) {
-      navigator.geolocation.getCurrentPosition(
-        async (position) => {
-          try {
-            const { latitude, longitude } = position.coords;
-            const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
-            const data = await res.json();
-            const city = data.address.city || data.address.village || data.address.suburb || data.address.state_district || "Bhagalpur";
-            const state = data.address.state || "Bihar";
-            setLocation(`${city}, ${state}`);
-          } catch (error) { fetchIpLocation(); }
-        }, 
-        () => fetchIpLocation(), { enableHighAccuracy: true, timeout: 5000 }
-      );
-    } else { fetchIpLocation(); }
-  };
-
-  const fetchIpLocation = async () => {
-    try {
-      const res = await fetch('https://ipapi.co/json/');
-      const data = await res.json();
-      if(data.city && data.city !== "Patna") setLocation(`${data.city}, ${data.region}`);
-      else setLocation("Bhagalpur, Bihar");
-    } catch (err) { setLocation("Bhagalpur, Bihar"); }
-  };
-
-  const handleManualLocationSubmit = (e) => {
-    e.preventDefault();
-    if (customLocationInput.trim() !== "") {
-      setLocation(customLocationInput);
-      setIsChangingLocation(false);
-      setCustomLocationInput("");
-    }
-  };
 
   const handleLoginSuccess = (userData) => {
     setUser(userData); 
@@ -377,21 +332,6 @@ export default function App() {
           </div>
         </div>
       </nav>
-
-      {/* --- MANUAL LOCATION DRAWER --- */}
-      {isChangingLocation && (!user || user.role === 'CUSTOMER') && (
-        <div className="bg-white/80 backdrop-blur-md border-b border-white/50 py-6 px-4 shadow-lg transition-all duration-300 relative z-30">
-          <div className="max-w-2xl mx-auto flex flex-col md:flex-row gap-4 items-center">
-            <form onSubmit={handleManualLocationSubmit} className="w-full flex gap-3">
-              <input type="text" required placeholder="Enter exact Society, Block or Village..." value={customLocationInput} onChange={(e) => setCustomLocationInput(e.target.value)} className="w-full bg-white/90 border border-violet-200 rounded-xl px-5 py-3 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-violet-500 shadow-sm" />
-              <button type="submit" className="bg-gradient-to-r from-violet-800 to-indigo-800 text-white font-bold px-8 py-3 rounded-xl text-sm shadow-md cursor-pointer hover:shadow-lg transition-all">Set Location</button>
-            </form>
-            <button onClick={detectLocation} className="text-xs font-black text-violet-800 hover:text-rose-600 transition whitespace-nowrap uppercase tracking-wide cursor-pointer flex items-center gap-1">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg> Auto-Detect
-            </button>
-          </div>
-        </div>
-      )}
 
       {/* --- MAIN VIEWS --- */}
       <main className="w-full relative z-10">
@@ -2259,5 +2199,207 @@ function Footer({ setView, currentView = 'home' }) {
         
       </div>
     </footer>
+  );
+}
+
+/* ==========================================================================
+   ZIPY 2.0 - COMPLETE HOME VIEW LOGIC + NEW PREMIUM HEADER INTEGRATION
+   ========================================================================== */
+
+// 1. HOME HEADER COMPONENT (Top Section: 18 mins, Location, Search Bar)
+function HomeHeader({ location, setIsChangingLocation }) {
+  return (
+    <div className="bg-[#f3e5f5] w-full pt-10 pb-6 px-4 md:px-6 rounded-b-[2rem] shadow-sm relative z-10 transform-gpu">
+      {/* Location & Profile Row */}
+      <div className="flex justify-between items-center mb-5">
+        <div 
+          className="cursor-pointer group flex flex-col items-start"
+          onClick={() => setIsChangingLocation(true)} 
+        >
+          <h2 className="text-3xl font-black text-[#4a148c] tracking-tight leading-none mb-1">
+            18 mins
+          </h2>
+          <div className="flex items-center text-sm font-bold text-[#6a1b9a] group-hover:text-[#4a148c] transition-colors">
+            <span className="truncate max-w-[200px] md:max-w-[300px]">
+              {location === "Detecting..." ? "Finding your location..." : location}
+            </span>
+            <svg className="w-4 h-4 ml-1 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+            </svg>
+          </div>
+        </div>
+
+        {/* Profile Icon */}
+        <div className="w-11 h-11 bg-gray-800 rounded-full flex items-center justify-center text-white shadow-md cursor-pointer hover:scale-105 transition-transform">
+          <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+             <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+          </svg>
+        </div>
+      </div>
+
+      {/* Minimal Search Bar */}
+      <div className="bg-white w-full rounded-[1.5rem] flex items-center px-4 py-3.5 shadow-sm border border-white/50 focus-within:shadow-md focus-within:border-[#4a148c]/30 transition-all cursor-text">
+        <svg className="w-5 h-5 text-gray-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+        <input 
+          type="text" 
+          placeholder="Search for 'Safe Toys'" 
+          className="flex-1 bg-transparent outline-none text-gray-800 font-medium placeholder-gray-400 text-base"
+        />
+        <div className="pl-3 border-l border-gray-200 ml-2 cursor-pointer hover:text-gray-900 text-gray-400 transition-colors">
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+          </svg>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// 2. LOCATION SELECTION MODAL COMPONENT (Full Screen Overlay)
+function LocationSelector({ setIsChangingLocation, location, customLocationInput, setCustomLocationInput, handleManualLocationSubmit, detectLocation }) {
+  return (
+    <div className="fixed inset-0 bg-[#f8f9fa] z-[100] animate-fade-in-up flex flex-col">
+      {/* Modal Header */}
+      <div className="bg-white flex items-center px-4 py-5 shadow-sm">
+        <button onClick={() => setIsChangingLocation(false)} className="p-2 -ml-2 rounded-full hover:bg-gray-100 transition-colors">
+          <svg className="w-6 h-6 text-gray-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+          </svg>
+        </button>
+        <h1 className="text-xl font-black text-gray-900 ml-2 tracking-tight">Select Your Location</h1>
+      </div>
+
+      <div className="p-4 md:p-6 flex-1 bg-[#f8f9fa]">
+        {/* Manual Input Form */}
+        <form onSubmit={handleManualLocationSubmit} className="bg-white border border-gray-200 rounded-[1.2rem] flex items-center px-4 py-3.5 mb-4 shadow-sm focus-within:border-[#4a148c] transition-colors">
+          <input 
+            type="text" 
+            placeholder="Search an area or address" 
+            value={customLocationInput}
+            onChange={(e) => setCustomLocationInput(e.target.value)}
+            className="flex-1 outline-none text-gray-800 font-medium placeholder-gray-400"
+          />
+          <button type="submit" className="text-[#4a148c]">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </button>
+        </form>
+
+        {/* Auto Detect Toggle Button */}
+        <button 
+          onClick={() => { detectLocation(); setIsChangingLocation(false); }}
+          className="w-full bg-white border border-gray-200 rounded-[1.2rem] py-3.5 flex justify-center items-center gap-3 font-bold text-gray-700 mb-8 shadow-sm hover:bg-gray-50 active:scale-[0.98] transition-all"
+        >
+          <div className="w-8 h-4 bg-gray-200 rounded-full relative">
+            <div className="w-4 h-4 bg-white rounded-full border border-gray-300 absolute left-0 shadow-sm"></div>
+          </div>
+          Turn on Auto Location
+        </button>
+
+        {/* Display Current Settled Location */}
+        <h3 className="text-[11px] font-black text-gray-400 mb-3 uppercase tracking-widest pl-1">
+          Current Location
+        </h3>
+        
+        <div className="bg-white border border-gray-100 rounded-[1.5rem] p-4 flex items-start gap-4 shadow-sm hover:shadow-md cursor-pointer transition-shadow">
+          <div className="bg-gray-50 p-2.5 rounded-full border border-gray-100 mt-0.5">
+            <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <div className="flex-1">
+            <h4 className="font-black text-gray-900 text-base leading-tight mb-1 line-clamp-1">
+              {location === "Detecting..." ? "Finding your location..." : location}
+            </h4>
+            <p className="text-sm font-medium text-gray-500 leading-snug">India</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// 3. MAIN CONTAINER VIEW (Yahan tumhara saara logic aur return layout ek sath h)
+function HomeView({ products, setProducts, isLoading, setIsLoading, location, setLocation, isChangingLocation, setIsChangingLocation, customLocationInput, setCustomLocationInput }) {
+  
+  // 🔥 DYNAMIC LOCATION DETECTION LOGIC (Tumhara Original Code)
+  useEffect(() => {
+    setTimeout(() => {
+      fetch(`${API_URL}/products/all`)
+        .then(res => res.json())
+        .then(data => { setProducts(data); setIsLoading(false); })
+        .catch(err => { console.error(err); setIsLoading(false); });
+    }, 800); 
+    detectLocation();
+  }, []);
+
+  const detectLocation = () => {
+    setLocation("Detecting...");
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          try {
+            const { latitude, longitude } = position.coords;
+            const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
+            const data = await res.json();
+            const city = data.address.city || data.address.village || data.address.suburb || data.address.state_district || "Bhagalpur";
+            const state = data.address.state || "Bihar";
+            setLocation(`${city}, ${state}`);
+          } catch (error) { fetchIpLocation(); }
+        }, 
+        () => fetchIpLocation(), { enableHighAccuracy: true, timeout: 5000 }
+      );
+    } else { fetchIpLocation(); }
+  };
+
+  const fetchIpLocation = async () => {
+    try {
+      const res = await fetch('https://ipapi.co/json/');
+      const data = await res.json();
+      if(data.city && data.city !== "Patna") setLocation(`${data.city}, ${data.region}`);
+      else setLocation("Bhagalpur, Bihar");
+    } catch (err) { setLocation("Bhagalpur, Bihar"); }
+  };
+
+  const handleManualLocationSubmit = (e) => {
+    e.preventDefault();
+    if (customLocationInput.trim() !== "") {
+      setLocation(customLocationInput);
+      setIsChangingLocation(false);
+      setCustomLocationInput("");
+    }
+  };
+
+  // 👇 LAYOUT RENDER SECTION 👇
+  return (
+    <div className="w-full relative min-h-screen bg-[#fcfcfc]">
+      
+      {/* A) Naya Premium Header automatically updates state onClick */}
+      <HomeHeader 
+        location={location} 
+        setIsChangingLocation={setIsChangingLocation} 
+      />
+
+      {/* B) Dynamic Location Overlay Toggle Modal */}
+      {isChangingLocation && (
+        <LocationSelector 
+          setIsChangingLocation={setIsChangingLocation}
+          location={location}
+          customLocationInput={customLocationInput}
+          setCustomLocationInput={setCustomLocationInput}
+          handleManualLocationSubmit={handleManualLocationSubmit}
+          detectLocation={detectLocation}
+        />
+      )}
+
+      {/* C) Baaki Ka Purana Content (Banners, Products, grid items yahan continuous rahenge) */}
+      <div className="px-4 md:px-8 pt-6">
+         {/* Tumhare grid card banners aur products ka code yahan iske neeche rahega */}
+      </div>
+
+    </div>
   );
 }
