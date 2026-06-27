@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, } from 'react';
 import { io } from 'socket.io-client';
 const HOST = window.location.hostname;
 const API_URL = `https://zippy-backend-vc4w.onrender.com/api`;
@@ -553,331 +553,194 @@ export default function App() {
    ULTRA-PREMIUM BENTO BOX CATEGORIES
 ========================================= */
 function CategoriesView({ setView, setActiveCategory }) {
-  const [hoveredIndex, setHoveredIndex] = useState(null);
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-  const [isLoading, setIsLoading] = useState(true);
-  const containerRef = useRef(null);
-
-  // ===== UNIQUE DATA WITH THEMES =====
+  // 🔥 FEATURE 1: Advanced Data with Offers & Trending Tags
   const CATEGORIES_DATA = [
-    { 
-      name: 'Fresh Produce', 
-      icon: '🥑', 
-      emoji: '🌿',
-      img: 'https://images.unsplash.com/photo-1610832958506-aa56368176cf?auto=format&fit=crop&w=600&q=80',
-      gradient: 'from-emerald-600/50 via-emerald-800/70',
-      glow: 'emerald-400',
-      tag: '🌱 Farm Fresh',
-      items: '200+',
-      color: '#10B981',
-      bg: 'from-emerald-500/20 to-emerald-600/10'
-    },
-    { 
-      name: 'Daily Grocery', 
-      icon: '🛒', 
-      emoji: '🏪',
-      img: 'https://images.unsplash.com/photo-1628088062854-d1870b4553da?auto=format&fit=crop&w=600&q=80',
-      gradient: 'from-amber-600/50 via-amber-800/70',
-      glow: 'amber-400',
-      tag: '📦 Essentials',
-      items: '500+',
-      color: '#F59E0B',
-      bg: 'from-amber-500/20 to-amber-600/10'
-    },
-    { 
-      name: 'Tech Zone', 
-      icon: '⚡', 
-      emoji: '💻',
-      img: 'https://images.unsplash.com/photo-1498049794561-7780e7231661?auto=format&fit=crop&w=600&q=80',
-      gradient: 'from-blue-600/50 via-blue-800/70',
-      glow: 'blue-400',
-      tag: '🚀 Latest',
-      items: '150+',
-      color: '#3B82F6',
-      bg: 'from-blue-500/20 to-blue-600/10'
-    },
-    { 
-      name: 'Fashion', 
-      icon: '👗', 
-      emoji: '✨',
-      img: 'https://images.unsplash.com/photo-1445205170230-053b83016050?auto=format&fit=crop&w=600&q=80',
-      gradient: 'from-pink-600/50 via-pink-800/70',
-      glow: 'pink-400',
-      tag: '👠 Trending',
-      items: '300+',
-      color: '#EC4899',
-      bg: 'from-pink-500/20 to-pink-600/10'
-    },
-    { 
-      name: 'Beauty', 
-      icon: '💄', 
-      emoji: '🌸',
-      img: 'https://images.unsplash.com/photo-1596462502278-27bf85033e5a?auto=format&fit=crop&w=600&q=80',
-      gradient: 'from-rose-600/50 via-rose-800/70',
-      glow: 'rose-400',
-      tag: '💅 Glow Up',
-      items: '180+',
-      color: '#F43F5E',
-      bg: 'from-rose-500/20 to-rose-600/10'
-    },
-    { 
-      name: 'Home Living', 
-      icon: '🏠', 
-      emoji: '🛋️',
-      img: 'https://images.unsplash.com/photo-1583947215259-38e31be8751f?auto=format&fit=crop&w=600&q=80',
-      gradient: 'from-teal-600/50 via-teal-800/70',
-      glow: 'teal-400',
-      tag: '🏡 Decor',
-      items: '250+',
-      color: '#14B8A6',
-      bg: 'from-teal-500/20 to-teal-600/10'
-    },
-    { 
-      name: 'Kids World', 
-      icon: '🧸', 
-      emoji: '🌈',
-      img: 'https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?auto=format&fit=crop&w=600&q=80',
-      gradient: 'from-purple-600/50 via-purple-800/70',
-      glow: 'purple-400',
-      tag: '🎈 Fun',
-      items: '120+',
-      color: '#8B5CF6',
-      bg: 'from-purple-500/20 to-purple-600/10'
-    },
-    { 
-      name: 'Mega Sale', 
-      icon: '🏷️', 
-      emoji: '🔥',
-      img: 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?auto=format&fit=crop&w=600&q=80',
-      gradient: 'from-red-600/50 via-red-800/70',
-      glow: 'red-400',
-      tag: '🎯 50% Off',
-      items: '400+',
-      color: '#EF4444',
-      bg: 'from-red-500/20 to-red-600/10'
-    },
+    { name: 'Fresh', icon: '🥑', img: 'https://images.unsplash.com/photo-1610832958506-aa56368176cf?auto=format&fit=crop&w=600&q=80', items: '120+ Items', trending: true, offer: 'Up to 20% Off', bg: 'bg-emerald-50', text: 'text-emerald-700' },
+    { name: 'Grocery', icon: '🌾', img: 'https://images.unsplash.com/photo-1628088062854-d1870b4553da?auto=format&fit=crop&w=600&q=80', items: '450+ Items', trending: false, offer: 'Free Delivery', bg: 'bg-amber-50', text: 'text-amber-700' },
+    { name: 'Electronics', icon: '🎧', img: 'https://images.unsplash.com/photo-1498049794561-7780e7231661?auto=format&fit=crop&w=600&q=80', items: '85+ Items', trending: true, offer: 'New Arrivals', bg: 'bg-blue-50', text: 'text-blue-700' },
+    { name: 'Fashion', icon: '👕', img: 'https://images.unsplash.com/photo-1445205170230-053b83016050?auto=format&fit=crop&w=600&q=80', items: '320+ Items', trending: false, offer: 'Flat 50% Off', bg: 'bg-pink-50', text: 'text-pink-700' },
+    { name: 'Beauty', icon: '💄', img: 'https://images.unsplash.com/photo-1596462502278-27bf85033e5a?auto=format&fit=crop&w=600&q=80', items: '150+ Items', trending: true, offer: 'Buy 1 Get 1', bg: 'bg-rose-50', text: 'text-rose-700' },
+    { name: 'Home', icon: '🛋️', img: 'https://images.unsplash.com/photo-1583947215259-38e31be8751f?auto=format&fit=crop&w=600&q=80', items: '90+ Items', trending: false, offer: null, bg: 'bg-teal-50', text: 'text-teal-700' },
+    { name: 'Kids', icon: '🧸', img: 'https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?auto=format&fit=crop&w=600&q=80', items: '210+ Items', trending: false, offer: 'Extra 10% Off', bg: 'bg-purple-50', text: 'text-purple-700' },
+    { name: '50% Off Zone', icon: '🏷️', img: 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?auto=format&fit=crop&w=600&q=80', items: 'Clearance', trending: true, offer: 'Mega Sale', bg: 'bg-red-50', text: 'text-red-700' },
+    { name: 'School Time', icon: '🎒', img: 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&w=600&q=80', items: '60+ Items', trending: false, offer: null, bg: 'bg-indigo-50', text: 'text-indigo-700' },
+    { name: "Father's Day", icon: '👨', img: 'https://images.unsplash.com/photo-1622384784422-95f26487ff63?auto=format&fit=crop&w=600&q=80', items: 'Gifts', trending: true, offer: 'Special Combo', bg: 'bg-gray-100', text: 'text-gray-800' },
   ];
 
-  // ===== UNIQUE LAYOUT STYLES (NO BENTO, CLEAN GRID) =====
-  const getCardStyle = (index) => {
-    const styles = [
-      { span: 'md:col-span-2 md:row-span-2 h-80 md:h-[360px]', order: 1, size: 'large' },
-      { span: 'md:col-span-1 h-52 md:h-[260px]', order: 2, size: 'medium' },
-      { span: 'md:col-span-1 h-52 md:h-[260px]', order: 3, size: 'medium' },
-      { span: 'md:col-span-1 h-52 md:h-[260px]', order: 4, size: 'medium' },
-      { span: 'md:col-span-1 h-52 md:h-[260px]', order: 5, size: 'medium' },
-      { span: 'md:col-span-1 h-52 md:h-[260px]', order: 6, size: 'medium' },
-      { span: 'md:col-span-1 h-52 md:h-[260px]', order: 7, size: 'medium' },
-      { span: 'md:col-span-1 h-52 md:h-[260px]', order: 8, size: 'medium' },
-    ];
-    return styles[index] || { span: 'md:col-span-1 h-52', order: index + 1, size: 'medium' };
+  // 🔥 FEATURE 2: Search & Filter States
+  const [searchQuery, setSearchQuery] = useState('');
+  const [activeFilter, setActiveFilter] = useState('All');
+
+  const filters = ['All', '🔥 Trending', '🎁 Offers', '🆕 New'];
+
+  // Smart Filtering Logic
+  const filteredCategories = CATEGORIES_DATA.filter(cat => {
+    const matchesSearch = cat.name.toLowerCase().includes(searchQuery.toLowerCase());
+    if (!matchesSearch) return false;
+    
+    if (activeFilter === '🔥 Trending') return cat.trending;
+    if (activeFilter === '🎁 Offers') return cat.offer !== null;
+    return true; // 'All' or 'New'
+  });
+
+  const trendingCategories = CATEGORIES_DATA.filter(cat => cat.trending);
+
+  const handleCategoryClick = (catName) => {
+    setActiveCategory(catName);
+    setView('home');
   };
 
-  // ===== LOADING =====
-  useEffect(() => {
-    const timer = setTimeout(() => setIsLoading(false), 600);
-    return () => clearTimeout(timer);
-  }, []);
+  return (
+    <div className="max-w-[1400px] mx-auto pt-2 pb-40 animate-fade-in-up relative z-10 bg-[#fcfcfc] min-h-screen">
+      
+      {/* 🚀 FEATURE 3: Glassmorphic Sticky Header + Search Bar */}
+      <div className="sticky top-0 z-30 bg-white/80 backdrop-blur-xl pt-6 pb-4 px-4 md:px-8 border-b border-gray-100 shadow-[0_10px_30px_rgba(0,0,0,0.02)]">
+        <div className="flex justify-between items-center mb-5">
+          <div className="flex items-center gap-4">
+            <button 
+              onClick={() => setView('home')} 
+              className="w-11 h-11 bg-white rounded-full flex items-center justify-center shadow-sm border border-gray-200 font-bold text-xl hover:bg-gray-50 active:scale-90 transition-all cursor-pointer text-gray-700"
+            >
+              ←
+            </button>
+            <div>
+              <h1 className="text-2xl md:text-3xl font-black text-gray-900 tracking-tight leading-none">
+                Aisles
+              </h1>
+              <p className="text-[11px] md:text-xs font-bold text-gray-400 mt-1 uppercase tracking-widest">
+                Discover what you need
+              </p>
+            </div>
+          </div>
+          {/* Decorative Elements */}
+          <div className="hidden md:flex gap-2">
+            <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
+            <span className="w-2 h-2 rounded-full bg-purple-500 animate-pulse delay-75"></span>
+          </div>
+        </div>
 
-  // ===== MOUSE EFFECTS =====
-  const handleMouseMove = (e, index) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const x = ((e.clientX - rect.left) / rect.width - 0.5) * 15;
-    const y = ((e.clientY - rect.top) / rect.height - 0.5) * 15;
-    setMousePosition({ x, y });
-    setHoveredIndex(index);
-  };
+        {/* 🔍 Search Bar */}
+        <div className="relative w-full group">
+          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+            <svg className="h-5 w-5 text-gray-400 group-focus-within:text-[#005af0] transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </div>
+          <input
+            type="text"
+            placeholder="Search for categories (e.g., Fresh, Electronics)..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full bg-gray-100/80 border-2 border-transparent focus:border-[#005af0]/30 focus:bg-white text-gray-900 text-sm font-bold rounded-2xl pl-11 pr-4 py-3.5 outline-none transition-all duration-300 shadow-inner placeholder-gray-400"
+          />
+        </div>
 
-  const handleMouseLeave = () => {
-    setHoveredIndex(null);
-    setMousePosition({ x: 0, y: 0 });
-  };
-
-  if (isLoading) {
-    return (
-      <div className="max-w-[1400px] mx-auto pt-6 pb-40 px-4 md:px-8">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-          {[1,2,3,4,5,6,7,8].map((i) => (
-            <div key={i} className={`rounded-2xl bg-gray-200/70 animate-pulse ${i === 0 ? 'md:col-span-2 md:row-span-2 h-80 md:h-[360px]' : 'h-52 md:h-[260px]'}`}></div>
+        {/* 🏷️ Filter Pills */}
+        <div className="flex gap-2 mt-4 overflow-x-auto hide-scroll pb-1">
+          {filters.map(filter => (
+            <button
+              key={filter}
+              onClick={() => setActiveFilter(filter)}
+              className={`whitespace-nowrap px-5 py-2 rounded-full text-xs font-black tracking-wide transition-all duration-300 active:scale-95 border ${
+                activeFilter === filter 
+                  ? 'bg-[#005af0] text-white border-[#005af0] shadow-[0_8px_20px_rgba(0,90,240,0.25)]' 
+                  : 'bg-white text-gray-500 border-gray-200 hover:bg-gray-50'
+              }`}
+            >
+              {filter}
+            </button>
           ))}
         </div>
       </div>
-    );
-  }
 
-  return (
-    <div 
-      ref={containerRef}
-      className="max-w-[1400px] mx-auto pt-6 pb-32 px-4 md:px-8 relative z-10"
-    >
-      
-      {/* ===== MINIMAL HEADER ===== */}
-      <div className="flex items-center gap-4 mb-8">
-        <button 
-          onClick={() => setView('home')} 
-          className="w-11 h-11 bg-white rounded-2xl flex items-center justify-center shadow-sm hover:shadow-md border border-gray-100/80 font-bold text-xl hover:-translate-x-1 active:scale-90 transition-all duration-300 cursor-pointer text-gray-700 group"
-        >
-          <span className="group-hover:-translate-x-0.5 transition-transform">←</span>
-        </button>
+      <div className="px-4 md:px-8 pt-6">
         
-        <div>
-          <h1 className="text-3xl md:text-4xl font-black text-gray-900 tracking-tight leading-none">
-            Shop by <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">Category</span>
-          </h1>
-          <p className="text-[11px] font-medium text-gray-400 mt-1 tracking-wide flex items-center gap-2">
-            <span className="w-1 h-1 bg-blue-500 rounded-full animate-pulse"></span>
-            {CATEGORIES_DATA.length} collections • curated for you
-          </p>
-        </div>
-      </div>
+        {/* 🌟 FEATURE 4: VIP Trending Scroll (Only visible when 'All' is selected and no search) */}
+        {activeFilter === 'All' && searchQuery === '' && (
+          <div className="mb-10">
+            <h2 className="text-lg font-black text-gray-900 mb-4 flex items-center gap-2">
+              🔥 Trending Right Now
+            </h2>
+            <div className="flex gap-4 overflow-x-auto hide-scroll pb-6 -mx-4 px-4 md:mx-0 md:px-0">
+              {trendingCategories.map((cat, i) => (
+                <div 
+                  key={`trend-${i}`}
+                  onClick={() => handleCategoryClick(cat.name)}
+                  className="min-w-[260px] md:min-w-[300px] h-[160px] relative rounded-[1.5rem] overflow-hidden group cursor-pointer shadow-sm border border-gray-100 active:scale-[0.97] transition-transform flex-shrink-0"
+                >
+                  <img src={cat.img} alt={cat.name} className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                  <div className="absolute inset-0 bg-gradient-to-r from-gray-900/90 via-gray-900/40 to-transparent"></div>
+                  
+                  <div className="absolute inset-0 p-5 flex flex-col justify-between">
+                    <div className="flex justify-between items-start">
+                      <span className="text-3xl drop-shadow-md bg-white/20 backdrop-blur-md w-12 h-12 flex items-center justify-center rounded-2xl border border-white/20">{cat.icon}</span>
+                      {cat.offer && <span className="bg-red-500 text-white text-[9px] font-black uppercase px-2 py-1 rounded-lg shadow-lg animate-pulse">{cat.offer}</span>}
+                    </div>
+                    <div>
+                      <h3 className="text-white font-black text-2xl drop-shadow-md">{cat.name}</h3>
+                      <p className="text-gray-300 font-bold text-xs">{cat.items}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
-      {/* ===== UNIQUE STATS ROW ===== */}
-      <div className="flex flex-wrap gap-3 mb-8">
-        <div className="bg-white rounded-xl px-4 py-2 shadow-sm border border-gray-100/80 flex items-center gap-2">
-          <span className="text-lg">📦</span>
-          <span className="text-sm font-bold text-gray-700">{CATEGORIES_DATA.reduce((acc, cat) => acc + parseInt(cat.items), 0)}+</span>
-          <span className="text-[10px] text-gray-400 font-medium">Items</span>
-        </div>
-        <div className="bg-white rounded-xl px-4 py-2 shadow-sm border border-gray-100/80 flex items-center gap-2">
-          <span className="text-lg">⭐</span>
-          <span className="text-sm font-bold text-gray-700">4.8</span>
-          <span className="text-[10px] text-gray-400 font-medium">Rating</span>
-        </div>
-        <div className="bg-white rounded-xl px-4 py-2 shadow-sm border border-gray-100/80 flex items-center gap-2">
-          <span className="text-lg">🔥</span>
-          <span className="text-sm font-bold text-gray-700">10k+</span>
-          <span className="text-[10px] text-gray-400 font-medium">Orders</span>
-        </div>
-        <div className="bg-white rounded-xl px-4 py-2 shadow-sm border border-gray-100/80 flex items-center gap-2 ml-auto">
-          <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse"></span>
-          <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Live</span>
-        </div>
-      </div>
+        {/* 🧊 FEATURE 5: Zippy Main Grid (New Modern Layered Cards) */}
+        <h2 className="text-lg font-black text-gray-900 mb-4">
+          {searchQuery ? 'Search Results' : (activeFilter === 'All' ? 'All Aisles' : activeFilter)}
+        </h2>
+        
+        {filteredCategories.length === 0 ? (
+          <div className="text-center py-20">
+            <span className="text-6xl mb-4 block">🔍</span>
+            <h3 className="text-xl font-black text-gray-800">No categories found</h3>
+            <p className="text-gray-500 font-bold text-sm mt-2">Try searching for something else!</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+            {filteredCategories.map((cat, i) => (
+              <div 
+                key={i} 
+                onClick={() => handleCategoryClick(cat.name)}
+                className="relative bg-white rounded-[1.5rem] p-3 md:p-4 hover:shadow-[0_20px_40px_rgba(0,0,0,0.06)] transition-all duration-300 cursor-pointer group border border-gray-100 active:scale-[0.97] flex flex-col h-[220px] md:h-[260px] overflow-hidden"
+              >
+                {/* Top Half: Image inside a nested rounded box */}
+                <div className={`w-full h-32 md:h-40 rounded-2xl overflow-hidden relative mb-3 ${cat.bg}`}>
+                  <img src={cat.img} alt={cat.name} className="w-full h-full object-cover mix-blend-overlay opacity-80 group-hover:scale-110 transition-transform duration-700" />
+                  
+                  {/* Floating Icon */}
+                  <div className="absolute top-3 left-3 w-8 h-8 md:w-10 md:h-10 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-sm border border-gray-100">
+                    <span className="text-base md:text-lg">{cat.icon}</span>
+                  </div>
 
-      {/* ===== UNIQUE CLEAN GRID ===== */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 auto-rows-auto">
-        {CATEGORIES_DATA.map((cat, i) => {
-          const style = getCardStyle(i);
-          const isHovered = hoveredIndex === i;
-          const tiltStyle = isHovered ? {
-            transform: `perspective(800px) rotateX(${-mousePosition.y}deg) rotateY(${mousePosition.x}deg) scale(1.02)`,
-            transition: 'transform 0.1s ease-out'
-          } : {
-            transform: 'perspective(800px) rotateX(0deg) rotateY(0deg) scale(1)',
-            transition: 'transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)'
-          };
+                  {/* Offer Badge inside Image */}
+                  {cat.offer && (
+                    <div className="absolute bottom-3 left-3 bg-gray-900/80 backdrop-blur-md text-white text-[9px] font-black px-2 py-1 rounded-lg border border-white/10 uppercase tracking-wide">
+                      {cat.offer}
+                    </div>
+                  )}
+                </div>
 
-          const isLarge = style.size === 'large';
-
-          return (
-            <div 
-              key={i} 
-              onClick={() => { setActiveCategory(cat.name); setView('home'); }}
-              onMouseMove={(e) => handleMouseMove(e, i)}
-              onMouseLeave={handleMouseLeave}
-              className={`relative rounded-2xl md:rounded-3xl overflow-hidden group cursor-pointer transition-all duration-500 ${style.span}`}
-              style={{
-                ...tiltStyle,
-                touchAction: 'manipulation',
-                willChange: 'transform',
-                order: style.order
-              }}
-            >
-              {/* Background Image */}
-              <img 
-                src={cat.img} 
-                alt={cat.name} 
-                className="absolute inset-0 w-full h-full object-cover transition-transform duration-[1000ms] ease-out group-hover:scale-110" 
-                loading="lazy"
-              />
-              
-              {/* Premium Gradient Overlay */}
-              <div className={`absolute inset-0 bg-gradient-to-t ${cat.gradient} to-transparent opacity-80 group-hover:opacity-95 transition-opacity duration-500`}></div>
-              
-              {/* Glow Ring on Hover */}
-              {isHovered && (
-                <div className={`absolute inset-0 ring-2 ring-${cat.glow}/40 ring-offset-2 ring-offset-transparent rounded-2xl md:rounded-3xl`}></div>
-              )}
-              
-              {/* Shimmer Effect */}
-              <div className="absolute top-0 left-[-100%] w-1/2 h-full bg-gradient-to-r from-transparent via-white/15 to-transparent -skew-x-12 group-hover:left-[200%] transition-all duration-[1200ms] ease-in-out z-10 pointer-events-none"></div>
-              
-              {/* Top Tags */}
-              <div className="absolute top-3 right-3 md:top-4 md:right-4 z-20 flex flex-col items-end gap-1.5">
-                <span className="px-3 py-1 bg-black/30 backdrop-blur-md rounded-full text-[8px] md:text-[10px] font-black text-white/90 border border-white/20 shadow-lg flex items-center gap-1.5">
-                  {cat.tag}
-                </span>
-                <span className="px-2 py-0.5 bg-white/10 backdrop-blur-sm rounded-full text-[7px] md:text-[8px] font-bold text-white/60 border border-white/10">
-                  {cat.items} items
-                </span>
-              </div>
-
-              {/* Bottom Content */}
-              <div className="absolute bottom-0 left-0 p-4 md:p-6 w-full flex flex-col justify-end z-20">
-                {/* Floating Icon Box */}
-                <div className={`${isLarge ? 'w-14 h-14 md:w-16 md:h-16' : 'w-11 h-11 md:w-12 md:h-12'} rounded-2xl bg-white/15 backdrop-blur-md flex items-center justify-center mb-2 md:mb-3 shadow-[0_8px_30px_rgba(0,0,0,0.2)] border border-white/20 transition-all duration-500 group-hover:-translate-y-2 group-hover:scale-110 group-hover:shadow-xl`}>
-                  <span className={`${isLarge ? 'text-2xl md:text-3xl' : 'text-xl md:text-2xl'} drop-shadow-md`}>{cat.icon}</span>
+                {/* Bottom Half: Text Info */}
+                <div className="flex-1 flex flex-col justify-end px-1">
+                  <h3 className="font-black text-gray-900 text-base md:text-lg tracking-tight group-hover:text-[#005af0] transition-colors line-clamp-1">{cat.name}</h3>
+                  <div className="flex justify-between items-center mt-1">
+                    <p className="text-[10px] md:text-xs font-bold text-gray-400">{cat.items}</p>
+                    <div className="w-6 h-6 rounded-full bg-gray-50 flex items-center justify-center group-hover:bg-[#005af0] group-hover:text-white transition-colors text-gray-400 text-xs">
+                      →
+                    </div>
+                  </div>
                 </div>
                 
-                <div className="transform transition-all duration-500 group-hover:translate-x-1">
-                  <h3 className={`${isLarge ? 'text-2xl md:text-4xl' : 'text-xl md:text-2xl'} font-black text-white drop-shadow-[0_2px_10px_rgba(0,0,0,0.6)] leading-tight tracking-tight`}>
-                    {cat.name}
-                  </h3>
-                  
-                  {/* Decorative Line */}
-                  <div className={`w-8 h-0.5 bg-white/40 rounded-full mt-1.5 transition-all duration-500 group-hover:w-12 group-hover:bg-white/80`}></div>
-                  
-                  <span className="text-white/40 text-[9px] md:text-xs font-medium opacity-0 group-hover:opacity-100 transition-all duration-500 delay-100 flex items-center gap-1.5 mt-1.5">
-                    <span className="text-lg">{cat.emoji}</span>
-                    Explore collection
-                    <svg className="w-3 h-3 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
-                    </svg>
-                  </span>
-                </div>
+                {/* Active Hover Border Effect */}
+                <div className="absolute inset-0 border-2 border-transparent group-hover:border-[#005af0]/10 rounded-[1.5rem] pointer-events-none transition-colors"></div>
               </div>
-              
-              {/* Hover Border Glow */}
-              <div className={`absolute inset-0 rounded-2xl md:rounded-3xl border border-transparent transition-all duration-500 ${
-                isHovered ? `border-white/20 shadow-[inset_0_0_60px_rgba(255,255,255,0.05)]` : ''
-              }`}></div>
-            </div>
-          );
-        })}
+            ))}
+          </div>
+        )}
       </div>
-
-      {/* ===== UNIQUE BOTTOM SECTION ===== */}
-      <div className="mt-10 grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-4 text-center border border-blue-100/50">
-          <span className="text-2xl block mb-1">🔄</span>
-          <p className="text-xs font-bold text-gray-700">Updated Daily</p>
-          <p className="text-[10px] text-gray-400">Fresh items every day</p>
-        </div>
-        <div className="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-2xl p-4 text-center border border-emerald-100/50">
-          <span className="text-2xl block mb-1">🎯</span>
-          <p className="text-xs font-bold text-gray-700">Curated Collections</p>
-          <p className="text-[10px] text-gray-400">Handpicked for you</p>
-        </div>
-        <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-2xl p-4 text-center border border-purple-100/50">
-          <span className="text-2xl block mb-1">⚡</span>
-          <p className="text-xs font-bold text-gray-700">Quick Delivery</p>
-          <p className="text-[10px] text-gray-400">Within 30 minutes</p>
-        </div>
-      </div>
-
-      {/* ===== MINIMAL FOOTER ===== */}
-      <div className="mt-8 text-center">
-        <div className="inline-flex items-center gap-3 px-5 py-2.5 bg-white/80 backdrop-blur-sm rounded-full border border-gray-100/50 shadow-sm">
-          <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">
-            {CATEGORIES_DATA.length} Categories
-          </span>
-          <span className="w-0.5 h-3 bg-gray-200"></span>
-          <span className="text-xs font-bold text-gray-400">
-            🚀 Explore now
-          </span>
-        </div>
-      </div>
-      
     </div>
   );
 }
