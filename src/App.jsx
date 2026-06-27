@@ -293,6 +293,35 @@ export default function App() {
           0% { transform: scale(0.8); opacity: 0; }
           100% { transform: scale(1); opacity: 1; }
         }
+          
+
+        /* ===== FADE IN UP ===== */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+.animate-fade-in-up {
+  animation: fadeInUp 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+/* ===== PULSE ===== */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
 
       `}</style>
 
@@ -553,101 +582,271 @@ export default function App() {
    ULTRA-PREMIUM BENTO BOX CATEGORIES
 ========================================= */
 function CategoriesView({ setView, setActiveCategory }) {
+  const [hoveredIndex, setHoveredIndex] = useState(null);
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const containerRef = useRef(null);
+
   const CATEGORIES_DATA = [
-    { name: 'Fresh', icon: '🥑', img: 'https://images.unsplash.com/photo-1610832958506-aa56368176cf?auto=format&fit=crop&w=600&q=80' },
-    { name: 'Grocery', icon: '🌾', img: 'https://images.unsplash.com/photo-1628088062854-d1870b4553da?auto=format&fit=crop&w=600&q=80' },
-    { name: 'Electronics', icon: '🎧', img: 'https://images.unsplash.com/photo-1498049794561-7780e7231661?auto=format&fit=crop&w=600&q=80' },
-    { name: 'Fashion', icon: '👕', img: 'https://images.unsplash.com/photo-1445205170230-053b83016050?auto=format&fit=crop&w=600&q=80' },
-    { name: 'Beauty', icon: '💄', img: 'https://images.unsplash.com/photo-1596462502278-27bf85033e5a?auto=format&fit=crop&w=600&q=80' },
-    { name: 'Home', icon: '🛋️', img: 'https://images.unsplash.com/photo-1583947215259-38e31be8751f?auto=format&fit=crop&w=600&q=80' },
-    { name: 'Kids', icon: '🧸', img: 'https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?auto=format&fit=crop&w=600&q=80' },
-    { name: '50% Off', icon: '🏷️', img: 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?auto=format&fit=crop&w=600&q=80' },
-    { name: 'School Time', icon: '🎒', img: 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&w=600&q=80' },
-    { name: "Father's Day", icon: '👨', img: 'https://images.unsplash.com/photo-1622384784422-95f26487ff63?auto=format&fit=crop&w=600&q=80' },
+    { 
+      name: 'Fresh', 
+      icon: '🥑', 
+      img: 'https://images.unsplash.com/photo-1610832958506-aa56368176cf?auto=format&fit=crop&w=600&q=80',
+      gradient: 'from-emerald-600/40 via-emerald-800/60',
+      glow: 'emerald-400',
+      tag: 'Farm Fresh',
+      items: '200+ items'
+    },
+    { 
+      name: 'Grocery', 
+      icon: '🌾', 
+      img: 'https://images.unsplash.com/photo-1628088062854-d1870b4553da?auto=format&fit=crop&w=600&q=80',
+      gradient: 'from-amber-600/40 via-amber-800/60',
+      glow: 'amber-400',
+      tag: 'Daily Essentials',
+      items: '500+ items'
+    },
+    { 
+      name: 'Electronics', 
+      icon: '🎧', 
+      img: 'https://images.unsplash.com/photo-1498049794561-7780e7231661?auto=format&fit=crop&w=600&q=80',
+      gradient: 'from-blue-600/40 via-blue-800/60',
+      glow: 'blue-400',
+      tag: 'Tech Hub',
+      items: '150+ items'
+    },
+    { 
+      name: 'Fashion', 
+      icon: '👕', 
+      img: 'https://images.unsplash.com/photo-1445205170230-053b83016050?auto=format&fit=crop&w=600&q=80',
+      gradient: 'from-pink-600/40 via-pink-800/60',
+      glow: 'pink-400',
+      tag: 'Trending Now',
+      items: '300+ items'
+    },
+    { 
+      name: 'Beauty', 
+      icon: '💄', 
+      img: 'https://images.unsplash.com/photo-1596462502278-27bf85033e5a?auto=format&fit=crop&w=600&q=80',
+      gradient: 'from-rose-600/40 via-rose-800/60',
+      glow: 'rose-400',
+      tag: 'Glow Up',
+      items: '180+ items'
+    },
+    { 
+      name: 'Home', 
+      icon: '🛋️', 
+      img: 'https://images.unsplash.com/photo-1583947215259-38e31be8751f?auto=format&fit=crop&w=600&q=80',
+      gradient: 'from-teal-600/40 via-teal-800/60',
+      glow: 'teal-400',
+      tag: 'Living Space',
+      items: '250+ items'
+    },
+    { 
+      name: 'Kids', 
+      icon: '🧸', 
+      img: 'https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?auto=format&fit=crop&w=600&q=80',
+      gradient: 'from-purple-600/40 via-purple-800/60',
+      glow: 'purple-400',
+      tag: 'Little Ones',
+      items: '120+ items'
+    },
+    { 
+      name: '50% Off', 
+      icon: '🏷️', 
+      img: 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?auto=format&fit=crop&w=600&q=80',
+      gradient: 'from-red-600/40 via-red-800/60',
+      glow: 'red-400',
+      tag: 'Mega Sale',
+      items: '400+ items'
+    },
+    { 
+      name: 'School Time', 
+      icon: '🎒', 
+      img: 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&w=600&q=80',
+      gradient: 'from-indigo-600/40 via-indigo-800/60',
+      glow: 'indigo-400',
+      tag: 'Back to School',
+      items: '100+ items'
+    },
+    { 
+      name: "Father's Day", 
+      icon: '👨', 
+      img: 'https://images.unsplash.com/photo-1622384784422-95f26487ff63?auto=format&fit=crop&w=600&q=80',
+      gradient: 'from-yellow-600/40 via-yellow-800/60',
+      glow: 'yellow-400',
+      tag: 'Special Gifts',
+      items: '80+ items'
+    },
   ];
 
-  // 🔥 PREMIUM BENTO GRID MATHS & DYNAMIC GRADIENTS
+  // Mouse tracking for 3D tilt effect
+  const handleMouseMove = (e, index) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width - 0.5) * 20;
+    const y = ((e.clientY - rect.top) / rect.height - 0.5) * 20;
+    setMousePosition({ x, y });
+    setHoveredIndex(index);
+  };
+
+  const handleMouseLeave = () => {
+    setHoveredIndex(null);
+    setMousePosition({ x: 0, y: 0 });
+  };
+
+  // Bento Grid Styles
   const getBentoStyle = (index) => {
     const styles = [
-      { span: 'col-span-2 md:col-span-2 md:row-span-2 h-64 md:h-auto', grad: 'from-emerald-900/90 via-emerald-800/30' }, // Fresh (Hero)
-      { span: 'col-span-2 md:col-span-2 h-44 md:h-[240px]', grad: 'from-amber-900/90 via-amber-800/30' }, // Grocery
-      { span: 'col-span-1 h-44 md:h-[240px]', grad: 'from-blue-900/90 via-blue-800/30' }, // Electronics
-      { span: 'col-span-1 h-44 md:h-[240px]', grad: 'from-pink-900/90 via-pink-800/30' }, // Fashion
-      { span: 'col-span-1 h-44 md:h-[240px]', grad: 'from-rose-900/90 via-rose-800/30' }, // Beauty
-      { span: 'col-span-1 h-44 md:h-[240px]', grad: 'from-teal-900/90 via-teal-800/30' }, // Home
-      { span: 'col-span-1 h-44 md:h-[240px]', grad: 'from-purple-900/90 via-purple-800/30' }, // Kids
-      { span: 'col-span-1 h-44 md:h-[240px]', grad: 'from-red-900/90 via-red-800/30' }, // 50% Off
-      { span: 'col-span-1 md:col-span-2 h-44 md:h-[240px]', grad: 'from-indigo-900/90 via-indigo-800/30' }, // School (Wide)
-      { span: 'col-span-1 md:col-span-2 h-44 md:h-[240px]', grad: 'from-yellow-900/90 via-yellow-800/30' }, // Father's Day (Wide)
+      { span: 'col-span-2 md:col-span-2 md:row-span-2 h-72 md:h-[340px]', order: 1 }, // Fresh (Hero)
+      { span: 'col-span-2 md:col-span-2 h-52 md:h-[260px]', order: 2 }, // Grocery
+      { span: 'col-span-1 h-52 md:h-[260px]', order: 3 }, // Electronics
+      { span: 'col-span-1 h-52 md:h-[260px]', order: 4 }, // Fashion
+      { span: 'col-span-1 h-52 md:h-[260px]', order: 5 }, // Beauty
+      { span: 'col-span-1 h-52 md:h-[260px]', order: 6 }, // Home
+      { span: 'col-span-1 h-52 md:h-[260px]', order: 7 }, // Kids
+      { span: 'col-span-1 h-52 md:h-[260px]', order: 8 }, // 50% Off
+      { span: 'col-span-1 md:col-span-2 h-52 md:h-[260px]', order: 9 }, // School
+      { span: 'col-span-1 md:col-span-2 h-52 md:h-[260px]', order: 10 }, // Father's Day
     ];
-    return styles[index] || { span: 'col-span-1 h-44', grad: 'from-gray-900/90 via-gray-800/30' };
+    return styles[index] || { span: 'col-span-1 h-52', order: index + 1 };
   };
 
   return (
-    <div className="max-w-[1400px] mx-auto pt-4 pb-40 px-4 md:px-8 animate-fade-in-up relative z-10">
+    <div 
+      ref={containerRef}
+      className="max-w-[1400px] mx-auto pt-6 pb-40 px-4 md:px-8 animate-fade-in-up relative z-10"
+    >
       
-      {/* 🚀 HEAVY PREMIUM HEADER */}
-      <div className="flex items-center gap-4 mb-8 sticky top-0 md:top-20 z-20 bg-white/80 backdrop-blur-2xl py-4 -mx-4 px-4 md:mx-0 md:px-0 border-b border-gray-100 md:border-none shadow-[0_10px_30px_rgba(0,0,0,0.03)] md:shadow-none">
-        <button 
-          onClick={() => setView('home')} 
-          className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-[0_4px_15px_rgba(0,0,0,0.05)] hover:shadow-[0_8px_25px_rgba(0,0,0,0.1)] border border-gray-100 font-bold text-xl hover:-translate-x-1 active:scale-90 transition-all duration-300 cursor-pointer text-gray-700"
-        >
-          ←
-        </button>
-        <div>
-          <h1 className="text-3xl md:text-4xl font-black text-gray-900 tracking-tighter leading-none">
-            Explore <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">Categories</span>
-          </h1>
-          <p className="text-xs md:text-sm font-bold text-gray-400 mt-1 uppercase tracking-widest">
-            Aisles curated for you
-          </p>
+      {/* ===== PREMIUM HEADER ===== */}
+      <div className="relative mb-10">
+        <div className="flex items-center gap-4">
+          <button 
+            onClick={() => setView('home')} 
+            className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center shadow-[0_4px_20px_rgba(0,0,0,0.06)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.12)] border border-gray-100/80 font-bold text-xl hover:-translate-x-1 active:scale-90 transition-all duration-300 cursor-pointer text-gray-700 group"
+          >
+            <span className="group-hover:-translate-x-0.5 transition-transform">←</span>
+          </button>
+          
+          <div className="flex-1">
+            <div className="flex items-center gap-3">
+              <h1 className="text-3xl md:text-4xl font-black text-gray-900 tracking-tighter leading-none">
+                Explore <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600">Categories</span>
+              </h1>
+              <span className="hidden md:inline-block px-3 py-1 bg-gradient-to-r from-blue-50 to-purple-50 text-blue-600 text-[10px] font-black rounded-full border border-blue-100/50">
+                {CATEGORIES_DATA.length} Aisles
+              </span>
+            </div>
+            <p className="text-xs md:text-sm font-medium text-gray-400 mt-1 tracking-wide flex items-center gap-2">
+              <span className="w-1 h-1 bg-blue-500 rounded-full animate-pulse"></span>
+              Curated collections for every need
+            </p>
+          </div>
         </div>
+        
+        {/* Decorative Line */}
+        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-blue-200/50 to-transparent mt-4"></div>
       </div>
 
-      {/* 🧊 BENTO BOX GRID */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-5">
+      {/* ===== BENTO GRID ===== */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-5 auto-rows-auto">
         {CATEGORIES_DATA.map((cat, i) => {
           const style = getBentoStyle(i);
+          const isHovered = hoveredIndex === i;
+          const tiltStyle = isHovered ? {
+            transform: `perspective(800px) rotateX(${-mousePosition.y}deg) rotateY(${mousePosition.x}deg) scale(1.02)`,
+            transition: 'transform 0.1s ease-out'
+          } : {
+            transform: 'perspective(800px) rotateX(0deg) rotateY(0deg) scale(1)',
+            transition: 'transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)'
+          };
+
           return (
             <div 
               key={i} 
               onClick={() => { setActiveCategory(cat.name); setView('home'); }}
-              className={`relative rounded-[1.5rem] md:rounded-[2rem] overflow-hidden group border border-gray-200/40 bg-gray-100 cursor-pointer transform transition-all duration-500 hover:shadow-[0_25px_50px_-12px_rgba(0,0,0,0.25)] hover:-translate-y-1.5 active:scale-[0.97] active:shadow-inner ${style.span}`}
-              style={{ touchAction: 'manipulation' }}
+              onMouseMove={(e) => handleMouseMove(e, i)}
+              onMouseLeave={handleMouseLeave}
+              className={`relative rounded-2xl md:rounded-3xl overflow-hidden group cursor-pointer transform transition-all duration-500 ${style.span}`}
+              style={{
+                ...tiltStyle,
+                touchAction: 'manipulation',
+                willChange: 'transform',
+                order: style.order
+              }}
             >
-              {/* Dynamic Image with deep zoom effect */}
+              {/* ===== BACKGROUND IMAGE ===== */}
               <img 
                 src={cat.img} 
                 alt={cat.name} 
-                className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-[800ms] ease-out opacity-90 group-hover:opacity-100" 
+                className="absolute inset-0 w-full h-full object-cover transition-transform duration-[800ms] ease-out group-hover:scale-110" 
+                loading="lazy"
               />
               
-              {/* Ultra-Premium Glassmorphism Color Overlay */}
-              <div className={`absolute inset-0 bg-gradient-to-t ${style.grad} to-transparent opacity-80 group-hover:opacity-95 transition-opacity duration-500`}></div>
+              {/* ===== GLOW OVERLAY ===== */}
+              <div className={`absolute inset-0 bg-gradient-to-t ${cat.gradient} to-transparent opacity-70 group-hover:opacity-90 transition-opacity duration-500`}></div>
               
-              {/* Flash Shine Effect on Hover */}
-              <div className="absolute top-0 left-[-100%] w-1/2 h-full bg-gradient-to-r from-transparent via-white/30 to-transparent -skew-x-12 group-hover:left-[200%] transition-all duration-1000 ease-in-out z-10 pointer-events-none"></div>
+              {/* ===== GLOW RING ON HOVER ===== */}
+              {isHovered && (
+                <div className={`absolute inset-0 ring-2 ring-${cat.glow}/50 ring-offset-2 ring-offset-transparent rounded-2xl md:rounded-3xl animate-pulse`}></div>
+              )}
               
-              <div className="absolute bottom-0 left-0 p-5 md:p-6 w-full flex flex-col justify-end z-20">
-                {/* Floating Emoji Box */}
-                <div className="w-10 h-10 md:w-12 md:h-12 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center mb-3 shadow-[0_8px_30px_rgba(0,0,0,0.12)] border border-white/20 group-hover:-translate-y-2 group-hover:scale-110 transition-transform duration-500">
-                   <span className="text-xl md:text-2xl drop-shadow-md">{cat.icon}</span>
+              {/* ===== SHIMMER EFFECT ===== */}
+              <div className="absolute top-0 left-[-100%] w-1/2 h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 group-hover:left-[200%] transition-all duration-1000 ease-in-out z-10 pointer-events-none"></div>
+              
+              {/* ===== TOP BADGE ===== */}
+              <div className="absolute top-3 right-3 md:top-4 md:right-4 z-20">
+                <span className={`px-2.5 py-1 bg-white/10 backdrop-blur-md rounded-full text-[8px] md:text-[10px] font-black text-white/80 border border-white/20 shadow-lg flex items-center gap-1`}>
+                  <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse"></span>
+                  {cat.tag}
+                </span>
+              </div>
+              
+              {/* ===== CONTENT ===== */}
+              <div className="absolute bottom-0 left-0 p-4 md:p-6 w-full flex flex-col justify-end z-20">
+                {/* Icon with 3D effect */}
+                <div className={`w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center mb-2 md:mb-3 shadow-[0_8px_30px_rgba(0,0,0,0.15)] border border-white/20 transition-all duration-500 group-hover:-translate-y-2 group-hover:scale-110 group-hover:shadow-xl`}>
+                  <span className="text-xl md:text-2xl drop-shadow-md">{cat.icon}</span>
                 </div>
                 
-                {/* Typography */}
-                <div className="transform group-hover:translate-x-2 transition-transform duration-500">
-                  <h3 className="text-white font-black text-xl md:text-2xl lg:text-3xl drop-shadow-[0_2px_10px_rgba(0,0,0,0.5)] leading-tight tracking-tight">
+                <div className="transform transition-all duration-500">
+                  <h3 className="text-white font-black text-lg md:text-2xl lg:text-3xl drop-shadow-[0_2px_10px_rgba(0,0,0,0.5)] leading-tight tracking-tight">
                     {cat.name}
                   </h3>
-                  <span className="text-white/70 text-[10px] md:text-xs font-bold uppercase tracking-widest mt-1 block opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100">
-                    Tap to view →
-                  </span>
+                  
+                  <div className="flex items-center gap-3 mt-0.5 md:mt-1">
+                    <span className="text-white/60 text-[9px] md:text-xs font-bold uppercase tracking-widest">
+                      {cat.items}
+                    </span>
+                    <span className="text-white/30 text-[8px]">•</span>
+                    <span className="text-white/40 text-[9px] md:text-xs font-medium opacity-0 group-hover:opacity-100 transition-all duration-500 delay-100 flex items-center gap-1">
+                      Explore
+                      <svg className="w-3 h-3 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+                      </svg>
+                    </span>
+                  </div>
                 </div>
               </div>
+              
+              {/* ===== HOVER GLOW BORDER ===== */}
+              <div className={`absolute inset-0 rounded-2xl md:rounded-3xl border-2 border-transparent transition-all duration-500 ${
+                isHovered ? `border-${cat.glow}/30 shadow-[inset_0_0_50px_rgba(255,255,255,0.05)]` : ''
+              }`}></div>
             </div>
           );
         })}
       </div>
+
+      {/* ===== BOTTOM CTA ===== */}
+      <div className="mt-10 text-center">
+        <div className="inline-flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-gray-50 to-gray-100/50 rounded-full border border-gray-200/50">
+          <span className="text-sm font-medium text-gray-600">✨</span>
+          <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+            {CATEGORIES_DATA.length} categories • Scroll to explore
+          </span>
+          <span className="w-1 h-1 bg-blue-400 rounded-full animate-pulse"></span>
+        </div>
+      </div>
+      
     </div>
   );
 }
