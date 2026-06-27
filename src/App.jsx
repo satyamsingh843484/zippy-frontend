@@ -550,7 +550,7 @@ export default function App() {
 
 
 /* =========================================
-   NEW COMPONENT: PREMIUM CATEGORIES PAGE (FIXED & SLEEK)
+   ULTRA-PREMIUM BENTO BOX CATEGORIES
 ========================================= */
 function CategoriesView({ setView, setActiveCategory }) {
   const CATEGORIES_DATA = [
@@ -566,33 +566,87 @@ function CategoriesView({ setView, setActiveCategory }) {
     { name: "Father's Day", icon: '👨', img: 'https://images.unsplash.com/photo-1622384784422-95f26487ff63?auto=format&fit=crop&w=600&q=80' },
   ];
 
+  // 🔥 PREMIUM BENTO GRID MATHS & DYNAMIC GRADIENTS
+  const getBentoStyle = (index) => {
+    const styles = [
+      { span: 'col-span-2 md:col-span-2 md:row-span-2 h-64 md:h-auto', grad: 'from-emerald-900/90 via-emerald-800/30' }, // Fresh (Hero)
+      { span: 'col-span-2 md:col-span-2 h-44 md:h-[240px]', grad: 'from-amber-900/90 via-amber-800/30' }, // Grocery
+      { span: 'col-span-1 h-44 md:h-[240px]', grad: 'from-blue-900/90 via-blue-800/30' }, // Electronics
+      { span: 'col-span-1 h-44 md:h-[240px]', grad: 'from-pink-900/90 via-pink-800/30' }, // Fashion
+      { span: 'col-span-1 h-44 md:h-[240px]', grad: 'from-rose-900/90 via-rose-800/30' }, // Beauty
+      { span: 'col-span-1 h-44 md:h-[240px]', grad: 'from-teal-900/90 via-teal-800/30' }, // Home
+      { span: 'col-span-1 h-44 md:h-[240px]', grad: 'from-purple-900/90 via-purple-800/30' }, // Kids
+      { span: 'col-span-1 h-44 md:h-[240px]', grad: 'from-red-900/90 via-red-800/30' }, // 50% Off
+      { span: 'col-span-1 md:col-span-2 h-44 md:h-[240px]', grad: 'from-indigo-900/90 via-indigo-800/30' }, // School (Wide)
+      { span: 'col-span-1 md:col-span-2 h-44 md:h-[240px]', grad: 'from-yellow-900/90 via-yellow-800/30' }, // Father's Day (Wide)
+    ];
+    return styles[index] || { span: 'col-span-1 h-44', grad: 'from-gray-900/90 via-gray-800/30' };
+  };
+
   return (
-    <div className="max-w-6xl mx-auto pt-2 pb-40 px-4 md:px-8 animate-fade-in-up relative z-10">
+    <div className="max-w-[1400px] mx-auto pt-4 pb-40 px-4 md:px-8 animate-fade-in-up relative z-10">
       
-      <div className="flex items-center gap-3 mb-6 sticky top-0 md:top-20 z-20 bg-[#fafafa]/95 backdrop-blur-xl py-4 -mx-4 px-4 md:mx-0 md:px-0 border-b border-gray-200/60 md:border-none shadow-[0_4px_20px_rgba(0,0,0,0.02)] md:shadow-none">
-        <button onClick={() => setView('home')} className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm border border-gray-200 font-bold text-xl hover:bg-gray-50 transition cursor-pointer">←</button>
-        <h1 className="text-2xl font-black text-gray-900 tracking-tight">Explore Categories</h1>
+      {/* 🚀 HEAVY PREMIUM HEADER */}
+      <div className="flex items-center gap-4 mb-8 sticky top-0 md:top-20 z-20 bg-white/80 backdrop-blur-2xl py-4 -mx-4 px-4 md:mx-0 md:px-0 border-b border-gray-100 md:border-none shadow-[0_10px_30px_rgba(0,0,0,0.03)] md:shadow-none">
+        <button 
+          onClick={() => setView('home')} 
+          className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-[0_4px_15px_rgba(0,0,0,0.05)] hover:shadow-[0_8px_25px_rgba(0,0,0,0.1)] border border-gray-100 font-bold text-xl hover:-translate-x-1 active:scale-90 transition-all duration-300 cursor-pointer text-gray-700"
+        >
+          ←
+        </button>
+        <div>
+          <h1 className="text-3xl md:text-4xl font-black text-gray-900 tracking-tighter leading-none">
+            Explore <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">Categories</span>
+          </h1>
+          <p className="text-xs md:text-sm font-bold text-gray-400 mt-1 uppercase tracking-widest">
+            Aisles curated for you
+          </p>
+        </div>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
-        {CATEGORIES_DATA.map((cat, i) => (
-          <div 
-            key={i} 
-            onClick={() => { setActiveCategory(cat.name); setView('home'); }}
-            className="relative h-44 md:h-52 rounded-[1.5rem] md:rounded-[2rem] overflow-hidden shadow-sm hover:shadow-[0_15px_30px_rgba(0,0,0,0.08)] hover:-translate-y-1 transition-all duration-300 cursor-pointer group border border-gray-200/50 bg-gray-100"
-          >
-            <img src={cat.img} alt={cat.name} className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 opacity-90 group-hover:opacity-100" />
-            
-            <div className="absolute inset-0 bg-gradient-to-t from-gray-900/90 via-gray-900/20 to-transparent"></div>
-            
-            <div className="absolute bottom-0 left-0 p-4 md:p-5 w-full flex flex-col justify-end">
-              <div className="w-9 h-9 md:w-10 md:h-10 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center mb-2 shadow-inner border border-white/20">
-                 <span className="text-base md:text-lg drop-shadow-md">{cat.icon}</span>
+      {/* 🧊 BENTO BOX GRID */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-5">
+        {CATEGORIES_DATA.map((cat, i) => {
+          const style = getBentoStyle(i);
+          return (
+            <div 
+              key={i} 
+              onClick={() => { setActiveCategory(cat.name); setView('home'); }}
+              className={`relative rounded-[1.5rem] md:rounded-[2rem] overflow-hidden group border border-gray-200/40 bg-gray-100 cursor-pointer transform transition-all duration-500 hover:shadow-[0_25px_50px_-12px_rgba(0,0,0,0.25)] hover:-translate-y-1.5 active:scale-[0.97] active:shadow-inner ${style.span}`}
+              style={{ touchAction: 'manipulation' }}
+            >
+              {/* Dynamic Image with deep zoom effect */}
+              <img 
+                src={cat.img} 
+                alt={cat.name} 
+                className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-[800ms] ease-out opacity-90 group-hover:opacity-100" 
+              />
+              
+              {/* Ultra-Premium Glassmorphism Color Overlay */}
+              <div className={`absolute inset-0 bg-gradient-to-t ${style.grad} to-transparent opacity-80 group-hover:opacity-95 transition-opacity duration-500`}></div>
+              
+              {/* Flash Shine Effect on Hover */}
+              <div className="absolute top-0 left-[-100%] w-1/2 h-full bg-gradient-to-r from-transparent via-white/30 to-transparent -skew-x-12 group-hover:left-[200%] transition-all duration-1000 ease-in-out z-10 pointer-events-none"></div>
+              
+              <div className="absolute bottom-0 left-0 p-5 md:p-6 w-full flex flex-col justify-end z-20">
+                {/* Floating Emoji Box */}
+                <div className="w-10 h-10 md:w-12 md:h-12 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center mb-3 shadow-[0_8px_30px_rgba(0,0,0,0.12)] border border-white/20 group-hover:-translate-y-2 group-hover:scale-110 transition-transform duration-500">
+                   <span className="text-xl md:text-2xl drop-shadow-md">{cat.icon}</span>
+                </div>
+                
+                {/* Typography */}
+                <div className="transform group-hover:translate-x-2 transition-transform duration-500">
+                  <h3 className="text-white font-black text-xl md:text-2xl lg:text-3xl drop-shadow-[0_2px_10px_rgba(0,0,0,0.5)] leading-tight tracking-tight">
+                    {cat.name}
+                  </h3>
+                  <span className="text-white/70 text-[10px] md:text-xs font-bold uppercase tracking-widest mt-1 block opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100">
+                    Tap to view →
+                  </span>
+                </div>
               </div>
-              <h3 className="text-white font-black text-lg md:text-xl drop-shadow-md leading-tight tracking-wide">{cat.name}</h3>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
