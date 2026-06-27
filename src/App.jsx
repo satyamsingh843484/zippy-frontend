@@ -563,7 +563,7 @@ function CategoriesView({ setView, setActiveCategory }) {
     { name: 'Kids', icon: '🧸', img: 'https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?auto=format&fit=crop&w=600&q=80', items: '210+ Items', trending: false, offer: 'Extra 10% Off', bg: 'bg-purple-50', text: 'text-purple-700' },
     { name: '50% Off Zone', icon: '🏷️', img: 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?auto=format&fit=crop&w=600&q=80', items: 'Clearance', trending: true, offer: 'Mega Sale', bg: 'bg-red-50', text: 'text-red-700' },
     { name: 'School Time', icon: '🎒', img: 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&w=600&q=80', items: '60+ Items', trending: false, offer: null, bg: 'bg-indigo-50', text: 'text-indigo-700' },
-    { name: "Father's Day", icon: '👨', img: 'https://images.unsplash.com/photo-1618077347084-5c4f1471077e?auto=format&fit=crop&w=600&q=80', items: 'Gifts', trending: true, offer: 'Special Combo', bg: 'bg-gray-100', text: 'text-gray-800' },
+    { name: "Father's Day", icon: '👨', img: 'https://images.unsplash.com/photo-1555529733-0e670560f7e1?auto=format&fit=crop&w=600&q=80', items: 'Gifts', trending: true, offer: 'Special Combo', bg: 'bg-gray-100', text: 'text-gray-800' },
   ];
 
   const [searchQuery, setSearchQuery] = useState('');
