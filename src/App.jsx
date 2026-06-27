@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { io } from 'socket.io-client';
 const HOST = window.location.hostname;
 const API_URL = `https://zippy-backend-vc4w.onrender.com/api`;
@@ -293,7 +293,7 @@ export default function App() {
           0% { transform: scale(0.8); opacity: 0; }
           100% { transform: scale(1); opacity: 1; }
         }
-          
+
 
         /* ===== FADE IN UP ===== */
 @keyframes fadeInUp {
