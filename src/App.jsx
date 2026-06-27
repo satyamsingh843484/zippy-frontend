@@ -554,22 +554,23 @@ export default function App() {
 ========================================= */
 function CategoriesView({ setView, setActiveCategory }) {
   // 🔥 FEATURE 1: Advanced Data with Offers & Trending Tags
+  // 🔥 FEATURE 1: Advanced Data with Offers & Trending Tags (Fixed 100% Working Images)
   const CATEGORIES_DATA = [
     { name: 'Fresh', icon: '🥑', img: 'https://images.unsplash.com/photo-1610832958506-aa56368176cf?auto=format&fit=crop&w=600&q=80', items: '120+ Items', trending: true, offer: 'Up to 20% Off', bg: 'bg-emerald-50', text: 'text-emerald-700' },
     { name: 'Grocery', icon: '🌾', img: 'https://images.unsplash.com/photo-1628088062854-d1870b4553da?auto=format&fit=crop&w=600&q=80', items: '450+ Items', trending: false, offer: 'Free Delivery', bg: 'bg-amber-50', text: 'text-amber-700' },
     { name: 'Electronics', icon: '🎧', img: 'https://images.unsplash.com/photo-1498049794561-7780e7231661?auto=format&fit=crop&w=600&q=80', items: '85+ Items', trending: true, offer: 'New Arrivals', bg: 'bg-blue-50', text: 'text-blue-700' },
     { name: 'Fashion', icon: '👕', img: 'https://images.unsplash.com/photo-1445205170230-053b83016050?auto=format&fit=crop&w=600&q=80', items: '320+ Items', trending: false, offer: 'Flat 50% Off', bg: 'bg-pink-50', text: 'text-pink-700' },
     
-    // 👇 FIX: Nayi Premium Beauty Image
-    { name: 'Beauty', icon: '💄', img: 'https://images.unsplash.com/photo-1522335158144-30fbca3f1f3e?auto=format&fit=crop&w=600&q=80', items: '150+ Items', trending: true, offer: 'Buy 1 Get 1', bg: 'bg-rose-50', text: 'text-rose-700' },
+    // 👇 FIX: Luxury Beauty & Makeup Image (Stable Link)
+    { name: 'Beauty', icon: '💄', img: 'https://images.unsplash.com/photo-1512496015851-a1fb8fc453cb?auto=format&fit=crop&w=600&q=80', items: '150+ Items', trending: true, offer: 'Buy 1 Get 1', bg: 'bg-rose-50', text: 'text-rose-700' },
     
     { name: 'Home', icon: '🛋️', img: 'https://images.unsplash.com/photo-1583947215259-38e31be8751f?auto=format&fit=crop&w=600&q=80', items: '90+ Items', trending: false, offer: null, bg: 'bg-teal-50', text: 'text-teal-700' },
     { name: 'Kids', icon: '🧸', img: 'https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?auto=format&fit=crop&w=600&q=80', items: '210+ Items', trending: false, offer: 'Extra 10% Off', bg: 'bg-purple-50', text: 'text-purple-700' },
     { name: '50% Off Zone', icon: '🏷️', img: 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?auto=format&fit=crop&w=600&q=80', items: 'Clearance', trending: true, offer: 'Mega Sale', bg: 'bg-red-50', text: 'text-red-700' },
     { name: 'School Time', icon: '🎒', img: 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&w=600&q=80', items: '60+ Items', trending: false, offer: null, bg: 'bg-indigo-50', text: 'text-indigo-700' },
     
-    // 👇 FIX: Nayi Premium Father's Day Image (Gift Box & Men's style)
-    { name: "Father's Day", icon: '👨', img: 'https://images.unsplash.com/photo-1555529733-0e670560f7e1?auto=format&fit=crop&w=600&q=80', items: 'Gifts', trending: true, offer: 'Special Combo', bg: 'bg-gray-100', text: 'text-gray-800' },
+    // 👇 FIX: Premium Father's Day Aesthetic (Stable Link)
+    { name: "Father's Day", icon: '👨', img: 'https://images.unsplash.com/photo-1505086786622-77114660ebbc?auto=format&fit=crop&w=600&q=80', items: 'Gifts', trending: true, offer: 'Special Combo', bg: 'bg-gray-100', text: 'text-gray-800' },
   ];
 
   // 🔥 FEATURE 2: Search & Filter States
