@@ -294,35 +294,6 @@ export default function App() {
           100% { transform: scale(1); opacity: 1; }
         }
 
-
-        /* ===== FADE IN UP ===== */
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px) scale(0.98);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-.animate-fade-in-up {
-  animation: fadeInUp 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-}
-
-/* ===== PULSE ===== */
-@keyframes pulse {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.4;
-  }
-}
-.animate-pulse {
-  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-
       `}</style>
 
       {/* --- AESTHETIC BACKGROUND BLOBS --- */}
@@ -584,17 +555,24 @@ export default function App() {
 function CategoriesView({ setView, setActiveCategory }) {
   const [hoveredIndex, setHoveredIndex] = useState(null);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedFilter, setSelectedFilter] = useState('All');
+  const [isLoading, setIsLoading] = useState(true);
   const containerRef = useRef(null);
 
+  // ===== REALISTIC DATA WITH MORE DETAILS =====
   const CATEGORIES_DATA = [
     { 
-      name: 'Fresh', 
+      name: 'Fresh Produce', 
       icon: '🥑', 
       img: 'https://images.unsplash.com/photo-1610832958506-aa56368176cf?auto=format&fit=crop&w=600&q=80',
       gradient: 'from-emerald-600/40 via-emerald-800/60',
       glow: 'emerald-400',
       tag: 'Farm Fresh',
-      items: '200+ items'
+      items: '200+ items',
+      popular: ['Apple', 'Banana', 'Tomato', 'Onion'],
+      color: 'emerald',
+      bg: 'bg-emerald-50'
     },
     { 
       name: 'Grocery', 
@@ -603,7 +581,10 @@ function CategoriesView({ setView, setActiveCategory }) {
       gradient: 'from-amber-600/40 via-amber-800/60',
       glow: 'amber-400',
       tag: 'Daily Essentials',
-      items: '500+ items'
+      items: '500+ items',
+      popular: ['Rice', 'Wheat', 'Oil', 'Sugar'],
+      color: 'amber',
+      bg: 'bg-amber-50'
     },
     { 
       name: 'Electronics', 
@@ -612,7 +593,10 @@ function CategoriesView({ setView, setActiveCategory }) {
       gradient: 'from-blue-600/40 via-blue-800/60',
       glow: 'blue-400',
       tag: 'Tech Hub',
-      items: '150+ items'
+      items: '150+ items',
+      popular: ['Headphones', 'Charger', 'Cable', 'Adapter'],
+      color: 'blue',
+      bg: 'bg-blue-50'
     },
     { 
       name: 'Fashion', 
@@ -621,7 +605,10 @@ function CategoriesView({ setView, setActiveCategory }) {
       gradient: 'from-pink-600/40 via-pink-800/60',
       glow: 'pink-400',
       tag: 'Trending Now',
-      items: '300+ items'
+      items: '300+ items',
+      popular: ['T-Shirt', 'Jeans', 'Shoes', 'Jacket'],
+      color: 'pink',
+      bg: 'bg-pink-50'
     },
     { 
       name: 'Beauty', 
@@ -630,16 +617,22 @@ function CategoriesView({ setView, setActiveCategory }) {
       gradient: 'from-rose-600/40 via-rose-800/60',
       glow: 'rose-400',
       tag: 'Glow Up',
-      items: '180+ items'
+      items: '180+ items',
+      popular: ['Lipstick', 'Foundation', 'Skincare', 'Perfume'],
+      color: 'rose',
+      bg: 'bg-rose-50'
     },
     { 
-      name: 'Home', 
+      name: 'Home & Living', 
       icon: '🛋️', 
       img: 'https://images.unsplash.com/photo-1583947215259-38e31be8751f?auto=format&fit=crop&w=600&q=80',
       gradient: 'from-teal-600/40 via-teal-800/60',
       glow: 'teal-400',
       tag: 'Living Space',
-      items: '250+ items'
+      items: '250+ items',
+      popular: ['Cushions', 'Lighting', 'Decor', 'Storage'],
+      color: 'teal',
+      bg: 'bg-teal-50'
     },
     { 
       name: 'Kids', 
@@ -648,7 +641,10 @@ function CategoriesView({ setView, setActiveCategory }) {
       gradient: 'from-purple-600/40 via-purple-800/60',
       glow: 'purple-400',
       tag: 'Little Ones',
-      items: '120+ items'
+      items: '120+ items',
+      popular: ['Toys', 'Books', 'Clothes', 'Shoes'],
+      color: 'purple',
+      bg: 'bg-purple-50'
     },
     { 
       name: '50% Off', 
@@ -657,7 +653,10 @@ function CategoriesView({ setView, setActiveCategory }) {
       gradient: 'from-red-600/40 via-red-800/60',
       glow: 'red-400',
       tag: 'Mega Sale',
-      items: '400+ items'
+      items: '400+ items',
+      popular: ['Electronics', 'Fashion', 'Home', 'Beauty'],
+      color: 'red',
+      bg: 'bg-red-50'
     },
     { 
       name: 'School Time', 
@@ -666,7 +665,10 @@ function CategoriesView({ setView, setActiveCategory }) {
       gradient: 'from-indigo-600/40 via-indigo-800/60',
       glow: 'indigo-400',
       tag: 'Back to School',
-      items: '100+ items'
+      items: '100+ items',
+      popular: ['Bags', 'Books', 'Pens', 'Uniforms'],
+      color: 'indigo',
+      bg: 'bg-indigo-50'
     },
     { 
       name: "Father's Day", 
@@ -675,11 +677,51 @@ function CategoriesView({ setView, setActiveCategory }) {
       gradient: 'from-yellow-600/40 via-yellow-800/60',
       glow: 'yellow-400',
       tag: 'Special Gifts',
-      items: '80+ items'
+      items: '80+ items',
+      popular: ['Watches', 'Shirts', 'Wallets', 'Books'],
+      color: 'yellow',
+      bg: 'bg-yellow-50'
     },
   ];
 
-  // Mouse tracking for 3D tilt effect
+  // ===== FILTERS =====
+  const filters = ['All', 'Trending', 'New', 'Sale', 'Featured'];
+
+  // ===== TRENDING CATEGORIES =====
+  const trendingCategories = ['Fresh Produce', 'Electronics', 'Fashion', '50% Off'];
+
+  // ===== SUGGESTED SEARCHES =====
+  const suggestions = ['Fresh Produce', 'Electronics', 'Fashion', 'Grocery', 'Beauty', 'Home & Living'];
+
+  // ===== LOADING SIMULATION =====
+  useEffect(() => {
+    const timer = setTimeout(() => setIsLoading(false), 800);
+    return () => clearTimeout(timer);
+  }, []);
+
+  // ===== SEARCH FILTER =====
+  const filteredCategories = CATEGORIES_DATA.filter(cat => 
+    cat.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  // ===== FILTER BY TYPE =====
+  const getFilteredData = () => {
+    if (selectedFilter === 'All') return filteredCategories;
+    if (selectedFilter === 'Trending') {
+      return filteredCategories.filter(cat => trendingCategories.includes(cat.name));
+    }
+    if (selectedFilter === 'Sale') {
+      return filteredCategories.filter(cat => cat.name.includes('Off') || cat.name.includes('Sale'));
+    }
+    if (selectedFilter === 'Featured') {
+      return filteredCategories.slice(0, 4);
+    }
+    return filteredCategories;
+  };
+
+  const displayData = getFilteredData();
+
+  // ===== MOUSE EFFECTS =====
   const handleMouseMove = (e, index) => {
     const rect = e.currentTarget.getBoundingClientRect();
     const x = ((e.clientX - rect.left) / rect.width - 0.5) * 20;
@@ -693,157 +735,289 @@ function CategoriesView({ setView, setActiveCategory }) {
     setMousePosition({ x: 0, y: 0 });
   };
 
-  // Bento Grid Styles
+  // ===== BENTO STYLES =====
   const getBentoStyle = (index) => {
     const styles = [
-      { span: 'col-span-2 md:col-span-2 md:row-span-2 h-72 md:h-[340px]', order: 1 }, // Fresh (Hero)
-      { span: 'col-span-2 md:col-span-2 h-52 md:h-[260px]', order: 2 }, // Grocery
-      { span: 'col-span-1 h-52 md:h-[260px]', order: 3 }, // Electronics
-      { span: 'col-span-1 h-52 md:h-[260px]', order: 4 }, // Fashion
-      { span: 'col-span-1 h-52 md:h-[260px]', order: 5 }, // Beauty
-      { span: 'col-span-1 h-52 md:h-[260px]', order: 6 }, // Home
-      { span: 'col-span-1 h-52 md:h-[260px]', order: 7 }, // Kids
-      { span: 'col-span-1 h-52 md:h-[260px]', order: 8 }, // 50% Off
-      { span: 'col-span-1 md:col-span-2 h-52 md:h-[260px]', order: 9 }, // School
-      { span: 'col-span-1 md:col-span-2 h-52 md:h-[260px]', order: 10 }, // Father's Day
+      { span: 'col-span-2 md:col-span-2 md:row-span-2 h-72 md:h-[340px]', order: 1 },
+      { span: 'col-span-2 md:col-span-2 h-52 md:h-[260px]', order: 2 },
+      { span: 'col-span-1 h-52 md:h-[260px]', order: 3 },
+      { span: 'col-span-1 h-52 md:h-[260px]', order: 4 },
+      { span: 'col-span-1 h-52 md:h-[260px]', order: 5 },
+      { span: 'col-span-1 h-52 md:h-[260px]', order: 6 },
+      { span: 'col-span-1 h-52 md:h-[260px]', order: 7 },
+      { span: 'col-span-1 h-52 md:h-[260px]', order: 8 },
+      { span: 'col-span-1 md:col-span-2 h-52 md:h-[260px]', order: 9 },
+      { span: 'col-span-1 md:col-span-2 h-52 md:h-[260px]', order: 10 },
     ];
     return styles[index] || { span: 'col-span-1 h-52', order: index + 1 };
   };
 
+  if (isLoading) {
+    return (
+      <div className="max-w-[1400px] mx-auto pt-6 pb-40 px-4 md:px-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-5">
+          {[1,2,3,4,5,6,7,8,9,10].map((i) => (
+            <div key={i} className={`rounded-2xl md:rounded-3xl bg-gray-200 animate-pulse ${i === 1 ? 'col-span-2 md:col-span-2 md:row-span-2 h-72 md:h-[340px]' : i === 2 ? 'col-span-2 md:col-span-2 h-52 md:h-[260px]' : i === 9 || i === 10 ? 'col-span-1 md:col-span-2 h-52 md:h-[260px]' : 'col-span-1 h-52 md:h-[260px]'}`}></div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div 
       ref={containerRef}
-      className="max-w-[1400px] mx-auto pt-6 pb-40 px-4 md:px-8 animate-fade-in-up relative z-10"
+      className="max-w-[1400px] mx-auto pt-4 pb-40 px-4 md:px-8 animate-fade-in-up relative z-10 bg-gray-50/30 min-h-screen"
     >
       
-      {/* ===== PREMIUM HEADER ===== */}
-      <div className="relative mb-10">
-        <div className="flex items-center gap-4">
-          <button 
-            onClick={() => setView('home')} 
-            className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center shadow-[0_4px_20px_rgba(0,0,0,0.06)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.12)] border border-gray-100/80 font-bold text-xl hover:-translate-x-1 active:scale-90 transition-all duration-300 cursor-pointer text-gray-700 group"
-          >
-            <span className="group-hover:-translate-x-0.5 transition-transform">←</span>
-          </button>
-          
-          <div className="flex-1">
-            <div className="flex items-center gap-3">
-              <h1 className="text-3xl md:text-4xl font-black text-gray-900 tracking-tighter leading-none">
-                Explore <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600">Categories</span>
+      {/* ===== PREMIUM HEADER WITH SEARCH ===== */}
+      <div className="sticky top-0 md:top-20 z-30 bg-white/80 backdrop-blur-2xl -mx-4 px-4 md:mx-0 md:px-0 py-4 md:py-6 border-b border-gray-100/80 shadow-sm">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <button 
+              onClick={() => setView('home')} 
+              className="w-10 h-10 md:w-12 md:h-12 bg-white rounded-xl md:rounded-2xl flex items-center justify-center shadow-[0_4px_15px_rgba(0,0,0,0.06)] hover:shadow-[0_8px_25px_rgba(0,0,0,0.12)] border border-gray-100/80 font-bold text-lg md:text-xl hover:-translate-x-1 active:scale-90 transition-all duration-300 cursor-pointer text-gray-700 group flex-shrink-0"
+            >
+              <span className="group-hover:-translate-x-0.5 transition-transform">←</span>
+            </button>
+            
+            <div>
+              <h1 className="text-2xl md:text-4xl font-black text-gray-900 tracking-tight leading-none">
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600">Explore</span>
               </h1>
-              <span className="hidden md:inline-block px-3 py-1 bg-gradient-to-r from-blue-50 to-purple-50 text-blue-600 text-[10px] font-black rounded-full border border-blue-100/50">
-                {CATEGORIES_DATA.length} Aisles
-              </span>
+              <p className="text-[10px] md:text-xs font-medium text-gray-400 mt-0.5 tracking-wide flex items-center gap-1.5">
+                <span className="w-1 h-1 bg-blue-500 rounded-full animate-pulse"></span>
+                {CATEGORIES_DATA.length} Categories • {CATEGORIES_DATA.reduce((acc, cat) => acc + parseInt(cat.items), 0)}+ Items
+              </p>
             </div>
-            <p className="text-xs md:text-sm font-medium text-gray-400 mt-1 tracking-wide flex items-center gap-2">
-              <span className="w-1 h-1 bg-blue-500 rounded-full animate-pulse"></span>
-              Curated collections for every need
-            </p>
+          </div>
+
+          {/* Search Bar */}
+          <div className="flex-1 max-w-md w-full">
+            <div className="relative">
+              <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                </svg>
+              </div>
+              <input 
+                type="text" 
+                placeholder="Search categories..." 
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full bg-gray-50/80 border border-gray-200/80 rounded-xl py-2.5 pl-10 pr-4 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-400/20 transition-all duration-300"
+              />
+              {searchTerm && (
+                <button 
+                  onClick={() => setSearchTerm('')}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+            
+            {/* Search Suggestions */}
+            {searchTerm && (
+              <div className="absolute mt-1 w-full max-w-md bg-white rounded-xl shadow-lg border border-gray-100 py-2 z-40">
+                {suggestions.filter(s => s.toLowerCase().includes(searchTerm.toLowerCase())).length > 0 ? (
+                  suggestions.filter(s => s.toLowerCase().includes(searchTerm.toLowerCase())).map((s, i) => (
+                    <button 
+                      key={i}
+                      onClick={() => setSearchTerm(s)}
+                      className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-2"
+                    >
+                      <span className="text-gray-400">🔍</span>
+                      {s}
+                    </button>
+                  ))
+                ) : (
+                  <div className="px-4 py-2 text-sm text-gray-400">No categories found</div>
+                )}
+              </div>
+            )}
           </div>
         </div>
-        
-        {/* Decorative Line */}
-        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-blue-200/50 to-transparent mt-4"></div>
+
+        {/* Filters */}
+        <div className="flex gap-2 mt-4 overflow-x-auto pb-1 hide-scroll">
+          {filters.map((filter) => (
+            <button
+              key={filter}
+              onClick={() => setSelectedFilter(filter)}
+              className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all duration-300 whitespace-nowrap ${
+                selectedFilter === filter 
+                  ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-md shadow-blue-500/25' 
+                  : 'bg-gray-100/80 text-gray-600 hover:bg-gray-200/80'
+              }`}
+            >
+              {filter}
+            </button>
+          ))}
+        </div>
       </div>
+
+      {/* ===== TRENDING BANNER ===== */}
+      <div className="mt-6 mb-8">
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-sm font-black text-gray-800 flex items-center gap-2">
+            <span className="text-lg">🔥</span> Trending Now
+          </h2>
+          <span className="text-[10px] text-gray-400 font-medium">View All →</span>
+        </div>
+        <div className="flex gap-2 overflow-x-auto hide-scroll pb-2">
+          {trendingCategories.map((cat) => (
+            <div 
+              key={cat}
+              onClick={() => {
+                const found = CATEGORIES_DATA.find(c => c.name === cat);
+                if (found) { setActiveCategory(cat); setView('home'); }
+              }}
+              className="flex-shrink-0 bg-white rounded-xl px-4 py-2 shadow-sm border border-gray-100/80 hover:shadow-md hover:border-blue-200 transition-all duration-300 cursor-pointer flex items-center gap-2"
+            >
+              <span className="text-lg">{CATEGORIES_DATA.find(c => c.name === cat)?.icon}</span>
+              <span className="text-xs font-bold text-gray-700 whitespace-nowrap">{cat}</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse"></span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ===== STATS BANNER ===== */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
+        <div className="bg-white rounded-xl p-3 md:p-4 shadow-sm border border-gray-100/80">
+          <p className="text-xl md:text-2xl font-black text-blue-600">{CATEGORIES_DATA.length}</p>
+          <p className="text-[10px] text-gray-400 font-medium">Categories</p>
+        </div>
+        <div className="bg-white rounded-xl p-3 md:p-4 shadow-sm border border-gray-100/80">
+          <p className="text-xl md:text-2xl font-black text-purple-600">{CATEGORIES_DATA.reduce((acc, cat) => acc + parseInt(cat.items), 0)}+</p>
+          <p className="text-[10px] text-gray-400 font-medium">Total Items</p>
+        </div>
+        <div className="bg-white rounded-xl p-3 md:p-4 shadow-sm border border-gray-100/80">
+          <p className="text-xl md:text-2xl font-black text-emerald-600">4.8 ⭐</p>
+          <p className="text-[10px] text-gray-400 font-medium">Avg Rating</p>
+        </div>
+        <div className="bg-white rounded-xl p-3 md:p-4 shadow-sm border border-gray-100/80">
+          <p className="text-xl md:text-2xl font-black text-orange-500">10k+</p>
+          <p className="text-[10px] text-gray-400 font-medium">Orders Today</p>
+        </div>
+      </div>
+
+      {/* ===== RESULTS COUNT ===== */}
+      {searchTerm && (
+        <div className="mb-4 text-sm text-gray-500">
+          Found <span className="font-bold text-gray-800">{displayData.length}</span> categories for "<span className="font-bold text-gray-800">{searchTerm}</span>"
+        </div>
+      )}
 
       {/* ===== BENTO GRID ===== */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-5 auto-rows-auto">
-        {CATEGORIES_DATA.map((cat, i) => {
-          const style = getBentoStyle(i);
-          const isHovered = hoveredIndex === i;
-          const tiltStyle = isHovered ? {
-            transform: `perspective(800px) rotateX(${-mousePosition.y}deg) rotateY(${mousePosition.x}deg) scale(1.02)`,
-            transition: 'transform 0.1s ease-out'
-          } : {
-            transform: 'perspective(800px) rotateX(0deg) rotateY(0deg) scale(1)',
-            transition: 'transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)'
-          };
+      {displayData.length > 0 ? (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-5 auto-rows-auto">
+          {displayData.map((cat, i) => {
+            const style = getBentoStyle(i);
+            const isHovered = hoveredIndex === i;
+            const tiltStyle = isHovered ? {
+              transform: `perspective(800px) rotateX(${-mousePosition.y}deg) rotateY(${mousePosition.x}deg) scale(1.02)`,
+              transition: 'transform 0.1s ease-out'
+            } : {
+              transform: 'perspective(800px) rotateX(0deg) rotateY(0deg) scale(1)',
+              transition: 'transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)'
+            };
 
-          return (
-            <div 
-              key={i} 
-              onClick={() => { setActiveCategory(cat.name); setView('home'); }}
-              onMouseMove={(e) => handleMouseMove(e, i)}
-              onMouseLeave={handleMouseLeave}
-              className={`relative rounded-2xl md:rounded-3xl overflow-hidden group cursor-pointer transform transition-all duration-500 ${style.span}`}
-              style={{
-                ...tiltStyle,
-                touchAction: 'manipulation',
-                willChange: 'transform',
-                order: style.order
-              }}
-            >
-              {/* ===== BACKGROUND IMAGE ===== */}
-              <img 
-                src={cat.img} 
-                alt={cat.name} 
-                className="absolute inset-0 w-full h-full object-cover transition-transform duration-[800ms] ease-out group-hover:scale-110" 
-                loading="lazy"
-              />
-              
-              {/* ===== GLOW OVERLAY ===== */}
-              <div className={`absolute inset-0 bg-gradient-to-t ${cat.gradient} to-transparent opacity-70 group-hover:opacity-90 transition-opacity duration-500`}></div>
-              
-              {/* ===== GLOW RING ON HOVER ===== */}
-              {isHovered && (
-                <div className={`absolute inset-0 ring-2 ring-${cat.glow}/50 ring-offset-2 ring-offset-transparent rounded-2xl md:rounded-3xl animate-pulse`}></div>
-              )}
-              
-              {/* ===== SHIMMER EFFECT ===== */}
-              <div className="absolute top-0 left-[-100%] w-1/2 h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 group-hover:left-[200%] transition-all duration-1000 ease-in-out z-10 pointer-events-none"></div>
-              
-              {/* ===== TOP BADGE ===== */}
-              <div className="absolute top-3 right-3 md:top-4 md:right-4 z-20">
-                <span className={`px-2.5 py-1 bg-white/10 backdrop-blur-md rounded-full text-[8px] md:text-[10px] font-black text-white/80 border border-white/20 shadow-lg flex items-center gap-1`}>
-                  <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse"></span>
-                  {cat.tag}
-                </span>
-              </div>
-              
-              {/* ===== CONTENT ===== */}
-              <div className="absolute bottom-0 left-0 p-4 md:p-6 w-full flex flex-col justify-end z-20">
-                {/* Icon with 3D effect */}
-                <div className={`w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center mb-2 md:mb-3 shadow-[0_8px_30px_rgba(0,0,0,0.15)] border border-white/20 transition-all duration-500 group-hover:-translate-y-2 group-hover:scale-110 group-hover:shadow-xl`}>
-                  <span className="text-xl md:text-2xl drop-shadow-md">{cat.icon}</span>
+            return (
+              <div 
+                key={i} 
+                onClick={() => { setActiveCategory(cat.name); setView('home'); }}
+                onMouseMove={(e) => handleMouseMove(e, i)}
+                onMouseLeave={handleMouseLeave}
+                className={`relative rounded-2xl md:rounded-3xl overflow-hidden group cursor-pointer transform transition-all duration-500 ${style.span}`}
+                style={{
+                  ...tiltStyle,
+                  touchAction: 'manipulation',
+                  willChange: 'transform',
+                  order: style.order
+                }}
+              >
+                <img 
+                  src={cat.img} 
+                  alt={cat.name} 
+                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-[800ms] ease-out group-hover:scale-110" 
+                  loading="lazy"
+                />
+                
+                <div className={`absolute inset-0 bg-gradient-to-t ${cat.gradient} to-transparent opacity-70 group-hover:opacity-90 transition-opacity duration-500`}></div>
+                
+                {isHovered && (
+                  <div className={`absolute inset-0 ring-2 ring-${cat.glow}/50 ring-offset-2 ring-offset-transparent rounded-2xl md:rounded-3xl animate-pulse`}></div>
+                )}
+                
+                <div className="absolute top-0 left-[-100%] w-1/2 h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 group-hover:left-[200%] transition-all duration-1000 ease-in-out z-10 pointer-events-none"></div>
+                
+                <div className="absolute top-3 right-3 md:top-4 md:right-4 z-20 flex flex-col items-end gap-1.5">
+                  <span className="px-2.5 py-1 bg-white/10 backdrop-blur-md rounded-full text-[8px] md:text-[10px] font-black text-white/80 border border-white/20 shadow-lg flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse"></span>
+                    {cat.tag}
+                  </span>
+                  <span className="px-2 py-0.5 bg-black/20 backdrop-blur-sm rounded-full text-[7px] md:text-[8px] font-bold text-white/60 border border-white/10">
+                    {cat.items}
+                  </span>
                 </div>
                 
-                <div className="transform transition-all duration-500">
-                  <h3 className="text-white font-black text-lg md:text-2xl lg:text-3xl drop-shadow-[0_2px_10px_rgba(0,0,0,0.5)] leading-tight tracking-tight">
-                    {cat.name}
-                  </h3>
+                <div className="absolute bottom-0 left-0 p-4 md:p-6 w-full flex flex-col justify-end z-20">
+                  <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center mb-2 md:mb-3 shadow-[0_8px_30px_rgba(0,0,0,0.15)] border border-white/20 transition-all duration-500 group-hover:-translate-y-2 group-hover:scale-110 group-hover:shadow-xl">
+                    <span className="text-xl md:text-2xl drop-shadow-md">{cat.icon}</span>
+                  </div>
                   
-                  <div className="flex items-center gap-3 mt-0.5 md:mt-1">
-                    <span className="text-white/60 text-[9px] md:text-xs font-bold uppercase tracking-widest">
-                      {cat.items}
-                    </span>
-                    <span className="text-white/30 text-[8px]">•</span>
-                    <span className="text-white/40 text-[9px] md:text-xs font-medium opacity-0 group-hover:opacity-100 transition-all duration-500 delay-100 flex items-center gap-1">
-                      Explore
-                      <svg className="w-3 h-3 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
-                      </svg>
-                    </span>
+                  <div className="transform transition-all duration-500">
+                    <h3 className="text-white font-black text-lg md:text-2xl lg:text-3xl drop-shadow-[0_2px_10px_rgba(0,0,0,0.5)] leading-tight tracking-tight">
+                      {cat.name}
+                    </h3>
+                    
+                    <div className="flex items-center gap-3 mt-0.5 md:mt-1">
+                      <span className="text-white/50 text-[8px] md:text-[9px] font-bold uppercase tracking-widest">
+                        {cat.popular.slice(0, 3).join(' • ')}
+                      </span>
+                      <span className="text-white/20 text-[8px]">•</span>
+                      <span className="text-white/40 text-[9px] md:text-xs font-medium opacity-0 group-hover:opacity-100 transition-all duration-500 delay-100 flex items-center gap-1">
+                        Explore
+                        <svg className="w-3 h-3 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+                        </svg>
+                      </span>
+                    </div>
                   </div>
                 </div>
+                
+                <div className={`absolute inset-0 rounded-2xl md:rounded-3xl border-2 border-transparent transition-all duration-500 ${
+                  isHovered ? `border-${cat.glow}/30 shadow-[inset_0_0_50px_rgba(255,255,255,0.05)]` : ''
+                }`}></div>
               </div>
-              
-              {/* ===== HOVER GLOW BORDER ===== */}
-              <div className={`absolute inset-0 rounded-2xl md:rounded-3xl border-2 border-transparent transition-all duration-500 ${
-                isHovered ? `border-${cat.glow}/30 shadow-[inset_0_0_50px_rgba(255,255,255,0.05)]` : ''
-              }`}></div>
-            </div>
-          );
-        })}
-      </div>
+            );
+          })}
+        </div>
+      ) : (
+        <div className="text-center py-20">
+          <span className="text-6xl block mb-4">🔍</span>
+          <h3 className="text-xl font-black text-gray-700">No categories found</h3>
+          <p className="text-sm text-gray-400 mt-1">Try searching with different keywords</p>
+          <button 
+            onClick={() => setSearchTerm('')}
+            className="mt-4 px-6 py-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white font-bold rounded-full text-sm shadow-lg hover:shadow-xl transition-all"
+          >
+            Clear Search
+          </button>
+        </div>
+      )}
 
       {/* ===== BOTTOM CTA ===== */}
       <div className="mt-10 text-center">
-        <div className="inline-flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-gray-50 to-gray-100/50 rounded-full border border-gray-200/50">
+        <div className="inline-flex flex-wrap items-center justify-center gap-3 px-6 py-3 bg-gradient-to-r from-gray-50 to-gray-100/50 rounded-full border border-gray-200/50">
           <span className="text-sm font-medium text-gray-600">✨</span>
           <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">
-            {CATEGORIES_DATA.length} categories • Scroll to explore
+            {displayData.length} categories • {CATEGORIES_DATA.reduce((acc, cat) => acc + parseInt(cat.items), 0)}+ items
           </span>
           <span className="w-1 h-1 bg-blue-400 rounded-full animate-pulse"></span>
+          <span className="text-xs font-bold text-gray-400">🔄 Updated daily</span>
         </div>
       </div>
       
