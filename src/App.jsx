@@ -1086,35 +1086,35 @@ const filteredProducts = activeTheme === 'All'
       </div>
 
       {/* =========================================
-          🚀 NAYA PREMIUM FLOATING CART BUTTON
+          🚀 NAYA PREMIUM FLOATING CART (COMPACT & MOBILE-FIXED)
       ========================================= */}
       {totalItems > 0 && (
-        <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 w-[92%] max-w-[400px] z-[100] animate-fade-in-up">
+        <div className="fixed bottom-24 md:bottom-6 left-1/2 transform -translate-x-1/2 w-[92%] max-w-[350px] z-[100] animate-fade-in-up">
           <div 
-            onClick={() => setIsCartOpen(true)} // 👉 ISPE CLICK KARTE HI TUMHARA CART DRAWER KHULEGA
-            className="bg-gray-900/95 backdrop-blur-xl border border-gray-700/50 rounded-[1.5rem] p-3 shadow-[0_20px_40px_rgba(0,0,0,0.4)] flex justify-between items-center cursor-pointer hover:bg-gray-900 hover:scale-[1.02] active:scale-95 transition-all group"
+            onClick={() => setIsCartOpen(true)} 
+            className="bg-gray-900/95 backdrop-blur-xl border border-gray-700/50 rounded-[1.2rem] p-2 md:p-3 shadow-[0_20px_40px_rgba(0,0,0,0.4)] flex justify-between items-center cursor-pointer hover:bg-gray-900 hover:scale-[1.02] active:scale-95 transition-all group"
           >
             {/* Left Side: Bag Icon & Price */}
-            <div className="flex items-center gap-3">
-               <div className="bg-white/10 w-11 h-11 rounded-[1rem] flex items-center justify-center border border-white/10 relative overflow-hidden">
+            <div className="flex items-center gap-2.5 md:gap-3">
+               <div className="bg-white/10 w-9 h-9 md:w-11 md:h-11 rounded-[0.8rem] flex items-center justify-center border border-white/10 relative overflow-hidden">
                  <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                 <span className="text-xl relative z-10 drop-shadow-md">🛍️</span>
+                 <span className="text-lg md:text-xl relative z-10 drop-shadow-md">🛍️</span>
                </div>
                
                <div className="flex flex-col justify-center">
-                 <span className="text-white font-black text-sm tracking-wide">
+                 <span className="text-white font-black text-xs md:text-sm tracking-wide leading-tight">
                    {totalItems} {totalItems === 1 ? 'ITEM' : 'ITEMS'}
                  </span>
-                 <span className="text-emerald-400 font-bold text-[11px] uppercase tracking-widest mt-0.5 flex items-center gap-1">
-                   ₹{totalPrice.toFixed(0)} <span className="text-gray-500">•</span> View Cart
+                 <span className="text-emerald-400 font-bold text-[10px] md:text-[11px] uppercase tracking-widest mt-0.5 flex items-center gap-1">
+                   ₹{totalPrice.toFixed(0)} <span className="text-gray-500">•</span> View
                  </span>
                </div>
             </div>
             
             {/* Right Side: Checkout Button */}
-            <div className="flex items-center gap-2 bg-white text-gray-900 px-5 py-3 rounded-xl font-black text-sm shadow-[0_0_15px_rgba(255,255,255,0.2)]">
+            <div className="flex items-center gap-1.5 bg-white text-gray-900 px-3 py-2 md:px-5 md:py-3 rounded-[0.8rem] md:rounded-xl font-black text-xs md:text-sm shadow-[0_0_15px_rgba(255,255,255,0.2)]">
               Checkout
-              <svg className="w-4 h-4 text-gray-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-3.5 h-3.5 md:w-4 md:h-4 text-gray-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M9 5l7 7-7 7" />
               </svg>
             </div>
