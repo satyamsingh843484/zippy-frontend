@@ -1086,40 +1086,72 @@ const filteredProducts = activeTheme === 'All'
       </div>
 
       {/* =========================================
-          🚀 NAYA PREMIUM FLOATING CART (COMPACT & MOBILE-FIXED)
+          🚀 NAYA PREMIUM FLOATING CART (IMAGE REFERENCE STYLE)
       ========================================= */}
       {totalItems > 0 && (
-        <div className="fixed bottom-24 md:bottom-6 left-1/2 transform -translate-x-1/2 w-[92%] max-w-[350px] z-[100] animate-fade-in-up">
-          <div 
-            onClick={() => setIsCartOpen(true)} 
-            className="bg-gray-900/95 backdrop-blur-xl border border-gray-700/50 rounded-[1.2rem] p-2 md:p-3 shadow-[0_20px_40px_rgba(0,0,0,0.4)] flex justify-between items-center cursor-pointer hover:bg-gray-900 hover:scale-[1.02] active:scale-95 transition-all group"
-          >
-            {/* Left Side: Bag Icon & Price */}
-            <div className="flex items-center gap-2.5 md:gap-3">
-               <div className="bg-white/10 w-9 h-9 md:w-11 md:h-11 rounded-[0.8rem] flex items-center justify-center border border-white/10 relative overflow-hidden">
-                 <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                 <span className="text-lg md:text-xl relative z-10 drop-shadow-md">🛍️</span>
-               </div>
-               
-               <div className="flex flex-col justify-center">
-                 <span className="text-white font-black text-xs md:text-sm tracking-wide leading-tight">
+        <>
+          {/* 🔥 Custom Spring Bounce Animation */}
+          <style>{`
+            @keyframes popUpCart {
+              0% { transform: translate(-50%, 80px) scale(0.8); opacity: 0; }
+              60% { transform: translate(-50%, -10px) scale(1.05); opacity: 1; }
+              100% { transform: translate(-50%, 0) scale(1); opacity: 1; }
+            }
+            .animate-pop-up-cart {
+              animation: popUpCart 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+            }
+          `}</style>
+
+          {/* Wrapper - Mobile me nav bar ke upar (bottom-24), Laptop me (bottom-8) */}
+          <div className="fixed bottom-24 md:bottom-8 left-1/2 z-[100] animate-pop-up-cart w-max">
+            <div 
+              onClick={() => setIsCartOpen(true)} 
+              className="bg-[#0b5cff] shadow-[0_10px_30px_rgba(11,92,255,0.4)] rounded-[1rem] md:rounded-[1.2rem] px-4 py-2.5 md:px-5 md:py-3 flex justify-between items-center cursor-pointer hover:bg-blue-700 hover:scale-[1.02] active:scale-95 transition-all min-w-[260px] md:min-w-[320px] border border-blue-400/30"
+            >
+              
+              {/* Left Side: Cart Text */}
+              <div className="flex flex-col items-start mr-4 md:mr-6">
+                 <span className="text-white font-black text-sm md:text-base tracking-wide leading-none mb-1">
+                   CART
+                 </span>
+                 <span className="text-blue-100 font-bold text-[10px] md:text-xs uppercase tracking-wider">
                    {totalItems} {totalItems === 1 ? 'ITEM' : 'ITEMS'}
                  </span>
-                 <span className="text-emerald-400 font-bold text-[10px] md:text-[11px] uppercase tracking-widest mt-0.5 flex items-center gap-1">
-                   ₹{totalPrice.toFixed(0)} <span className="text-gray-500">•</span> View
-                 </span>
-               </div>
-            </div>
-            
-            {/* Right Side: Checkout Button */}
-            <div className="flex items-center gap-1.5 bg-white text-gray-900 px-3 py-2 md:px-5 md:py-3 rounded-[0.8rem] md:rounded-xl font-black text-xs md:text-sm shadow-[0_0_15px_rgba(255,255,255,0.2)]">
-              Checkout
-              <svg className="w-3.5 h-3.5 md:w-4 md:h-4 text-gray-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M9 5l7 7-7 7" />
-              </svg>
+              </div>
+              
+              {/* Middle: Overlapping Item Thumbnails (Jaisa Screenshot me h) */}
+              <div className="flex items-center flex-1 justify-center mr-3 md:mr-4">
+                {cart.slice(0, 3).map((item, idx) => (
+                  <div 
+                    key={item._id || item.id || idx} 
+                    className={`w-7 h-7 md:w-9 md:h-9 bg-white rounded-md border-2 border-[#0b5cff] shadow-sm flex items-center justify-center overflow-hidden z-[${30 - idx * 10}] ${idx !== 0 ? '-ml-2.5 md:-ml-3' : ''}`}
+                  >
+                     <img 
+                       src={item.imagePath?.startsWith('http') ? item.imagePath : getImgSrc(item.imagePath)} 
+                       alt={item.title} 
+                       className="w-full h-full object-contain p-0.5"
+                       onError={(e) => e.target.src='https://via.placeholder.com/40'} 
+                     />
+                  </div>
+                ))}
+                {/* Agar 3 se jyada items hain toh +1, +2 dikhayega */}
+                {cart.length > 3 && (
+                  <div className="w-7 h-7 md:w-9 md:h-9 bg-blue-900 rounded-md border-2 border-[#0b5cff] flex items-center justify-center text-white text-[9px] md:text-[10px] font-black z-0 -ml-2.5 md:-ml-3 shadow-sm">
+                    +{cart.length - 3}
+                  </div>
+                )}
+              </div>
+              
+              {/* Right Side: Chevron Arrow */}
+              <div className="flex items-center justify-center text-white">
+                <svg className="w-4 h-4 md:w-5 md:h-5 transform transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M9 5l7 7-7 7" />
+                </svg>
+              </div>
+
             </div>
           </div>
-        </div>
+        </>
       )}
 
     </div>
