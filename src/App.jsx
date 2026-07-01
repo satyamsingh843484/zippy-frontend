@@ -217,7 +217,7 @@ export default function App() {
       // 4. Agar naya item hai, toh cart mein fresh entry karo
       return [...prev, { ...product, quantity: 1 }];
     });
-    setIsCartOpen(true);
+    //setIsCartOpen(true);
   };
 
   const removeFromCart = (productId) => {
@@ -730,7 +730,10 @@ function CategoriesView({ setView, setActiveCategory }) {
 /* =========================================
    MEGA HOME VIEW 
 ========================================= */
-function HomeView({ products, addToCart, openProduct, location, setIsChangingLocation, isLoading, user, setIsAuthOpen, setView, activeTheme, setActiveTheme, getImgSrc, searchQuery, handleSearchChange, showSuggestions, searchSuggestions, setShowSuggestions }) {
+function HomeView({ cart = [], setIsCartOpen, products, addToCart, openProduct, location, setIsChangingLocation, isLoading, user, setIsAuthOpen, setView, activeTheme, setActiveTheme, getImgSrc, searchQuery, handleSearchChange, showSuggestions, searchSuggestions, setShowSuggestions }) {
+  
+  const totalItems = cart.reduce((total, item) => total + (item.quantity || 1), 0);
+  const totalPrice = cart.reduce((total, item) => total + (Number(item.price) * (item.quantity || 1)), 0);
   
   const THEMES = {
     'All': { bg: 'bg-[#0b5cff]', icon: '🧺', label: 'All' },
@@ -1032,6 +1035,44 @@ const filteredProducts = activeTheme === 'All'
             </div>
          </div>
       </div>
+
+      {/* =========================================
+          🚀 NAYA PREMIUM FLOATING CART BUTTON
+      ========================================= */}
+      {totalItems > 0 && (
+        <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 w-[92%] max-w-[400px] z-[100] animate-fade-in-up">
+          <div 
+            onClick={() => setIsCartOpen(true)} // 👉 ISPE CLICK KARTE HI TUMHARA CART DRAWER KHULEGA
+            className="bg-gray-900/95 backdrop-blur-xl border border-gray-700/50 rounded-[1.5rem] p-3 shadow-[0_20px_40px_rgba(0,0,0,0.4)] flex justify-between items-center cursor-pointer hover:bg-gray-900 hover:scale-[1.02] active:scale-95 transition-all group"
+          >
+            {/* Left Side: Bag Icon & Price */}
+            <div className="flex items-center gap-3">
+               <div className="bg-white/10 w-11 h-11 rounded-[1rem] flex items-center justify-center border border-white/10 relative overflow-hidden">
+                 <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                 <span className="text-xl relative z-10 drop-shadow-md">🛍️</span>
+               </div>
+               
+               <div className="flex flex-col justify-center">
+                 <span className="text-white font-black text-sm tracking-wide">
+                   {totalItems} {totalItems === 1 ? 'ITEM' : 'ITEMS'}
+                 </span>
+                 <span className="text-emerald-400 font-bold text-[11px] uppercase tracking-widest mt-0.5 flex items-center gap-1">
+                   ₹{totalPrice.toFixed(0)} <span className="text-gray-500">•</span> View Cart
+                 </span>
+               </div>
+            </div>
+            
+            {/* Right Side: Checkout Button */}
+            <div className="flex items-center gap-2 bg-white text-gray-900 px-5 py-3 rounded-xl font-black text-sm shadow-[0_0_15px_rgba(255,255,255,0.2)]">
+              Checkout
+              <svg className="w-4 h-4 text-gray-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M9 5l7 7-7 7" />
+              </svg>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
