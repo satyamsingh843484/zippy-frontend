@@ -396,7 +396,7 @@ export default function App() {
       {/* --- MAIN VIEWS --- */}
       <main className="w-full relative z-10">
         {/* 🔥 LEAK FIXED: Main View Routing Strict Protection */}
-        {view === 'home' && (!user || user.role === 'CUSTOMER') && <HomeView products={products} addToCart={addToCart} openProduct={openProduct} location={location} setIsChangingLocation={setIsChangingLocation} isLoading={isLoading} user={user} setIsAuthOpen={setIsAuthOpen} setView={setView} activeTheme={activeCategory} setActiveTheme={setActiveCategory} getImgSrc={getImgSrc} searchQuery={searchQuery} handleSearchChange={handleSearchChange} showSuggestions={showSuggestions} searchSuggestions={searchSuggestions} setShowSuggestions={setShowSuggestions} />}
+        {view === 'home' && (!user || user.role === 'CUSTOMER') && <HomeView cart={cart} setIsCartOpen={setIsCartOpen} products={products} addToCart={addToCart} openProduct={openProduct} location={location} setIsChangingLocation={setIsChangingLocation} isLoading={isLoading} user={user} setIsAuthOpen={setIsAuthOpen} setView={setView} activeTheme={activeCategory} setActiveTheme={setActiveCategory} getImgSrc={getImgSrc} searchQuery={searchQuery} handleSearchChange={handleSearchChange} showSuggestions={showSuggestions} searchSuggestions={searchSuggestions} setShowSuggestions={setShowSuggestions} />}
         {view === 'categories' && (!user || user.role === 'CUSTOMER') && <CategoriesView setView={setView} setActiveCategory={setActiveCategory} />}
         
         {view === 'product' && (!user || user.role === 'CUSTOMER') && (
