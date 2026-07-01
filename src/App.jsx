@@ -396,7 +396,7 @@ export default function App() {
       {/* --- MAIN VIEWS --- */}
       <main className="w-full relative z-10">
         {/* 🔥 LEAK FIXED: Main View Routing Strict Protection */}
-        {view === 'home' && (!user || user.role === 'CUSTOMER') && <HomeView cart={cart} setIsCartOpen={setIsCartOpen} products={products} addToCart={addToCart} openProduct={openProduct} location={location} setIsChangingLocation={setIsChangingLocation} isLoading={isLoading} user={user} setIsAuthOpen={setIsAuthOpen} setView={setView} activeTheme={activeCategory} setActiveTheme={setActiveCategory} getImgSrc={getImgSrc} searchQuery={searchQuery} handleSearchChange={handleSearchChange} showSuggestions={showSuggestions} searchSuggestions={searchSuggestions} setShowSuggestions={setShowSuggestions} />}
+        {view === 'home' && (!user || user.role === 'CUSTOMER') && <HomeView cart={cart} setIsCartOpen={setIsCartOpen} removeFromCart={removeFromCart} products={products} addToCart={addToCart} openProduct={openProduct} location={location} setIsChangingLocation={setIsChangingLocation} isLoading={isLoading} user={user} setIsAuthOpen={setIsAuthOpen} setView={setView} activeTheme={activeCategory} setActiveTheme={setActiveCategory} getImgSrc={getImgSrc} searchQuery={searchQuery} handleSearchChange={handleSearchChange} showSuggestions={showSuggestions} searchSuggestions={searchSuggestions} setShowSuggestions={setShowSuggestions} />}
         {view === 'categories' && (!user || user.role === 'CUSTOMER') && <CategoriesView setView={setView} setActiveCategory={setActiveCategory} />}
         
         {view === 'product' && (!user || user.role === 'CUSTOMER') && (
@@ -730,7 +730,7 @@ function CategoriesView({ setView, setActiveCategory }) {
 /* =========================================
    MEGA HOME VIEW 
 ========================================= */
-function HomeView({ cart = [], setIsCartOpen, products, addToCart, openProduct, location, setIsChangingLocation, isLoading, user, setIsAuthOpen, setView, activeTheme, setActiveTheme, getImgSrc, searchQuery, handleSearchChange, showSuggestions, searchSuggestions, setShowSuggestions }) {
+function HomeView({ cart = [], setIsCartOpen, removeFromCart, products, addToCart, openProduct, location, setIsChangingLocation, isLoading, user, setIsAuthOpen, setView, activeTheme, setActiveTheme, getImgSrc, searchQuery, handleSearchChange, showSuggestions, searchSuggestions, setShowSuggestions }) {
   
   const totalItems = cart.reduce((total, item) => total + (item.quantity || 1), 0);
   const totalPrice = cart.reduce((total, item) => total + (Number(item.price) * (item.quantity || 1)), 0);
@@ -973,9 +973,32 @@ const filteredProducts = activeTheme === 'All'
             </div>
           </div>
           
-          <button onClick={(e) => { e.stopPropagation(); addToCart(p); }} className={`absolute -right-2 -bottom-2 w-10 h-10 bg-white border border-gray-100 rounded-xl flex items-center justify-center text-2xl font-light transition-all shadow-[0_4px_10px_rgba(0,0,0,0.05)] cursor-pointer ${ct.btn}`}>
-             +
-          </button>
+          {/* 🔥 1. SMART QTY BUTTON (MAIN PRODUCTS) 🔥 */}
+          {(() => {
+            const cartItem = cart.find(c => (c._id || c.id) === (p._id || p.id));
+            
+            if (cartItem && cartItem.quantity > 0) {
+              return (
+                <div onClick={(e) => e.stopPropagation()} className="absolute -right-2 -bottom-2 h-10 bg-white border border-gray-200 rounded-xl flex items-center justify-between shadow-sm overflow-hidden w-[5.5rem] z-20">
+                   <button onClick={() => removeFromCart(p._id || p.id)} className="w-8 h-full flex items-center justify-center text-xl text-gray-600 hover:bg-gray-100 transition-colors cursor-pointer">
+                     −
+                   </button>
+                   <span className="flex-1 text-center text-xs font-black text-gray-900">
+                     {cartItem.quantity}
+                   </span>
+                   <button onClick={() => addToCart(p)} className={`w-8 h-full flex items-center justify-center text-xl transition-colors cursor-pointer ${ct.btn.split(' ')[0]} hover:bg-gray-50`}>
+                     +
+                   </button>
+                </div>
+              );
+            }
+            
+            return (
+              <button onClick={(e) => { e.stopPropagation(); addToCart(p); }} className={`absolute -right-2 -bottom-2 w-10 h-10 bg-white border border-gray-100 rounded-xl flex items-center justify-center text-2xl font-light transition-all shadow-[0_4px_10px_rgba(0,0,0,0.05)] cursor-pointer z-20 ${ct.btn}`}>
+                 +
+              </button>
+            );
+          })()}
         </div>
       </div>
     </div>
@@ -1023,12 +1046,38 @@ const filteredProducts = activeTheme === 'All'
                      <h4 className="text-sm font-bold text-white truncate">{item.n}</h4>
                      <div className="flex justify-between items-center mt-3">
                         <span className="font-black text-base text-white">₹{item.p}</span>
-                        <button 
-  onClick={() => addToCart({ id: item.id, title: item.n, price: item.p, imagePath: item.i, category: 'Cafe' })} 
-  className="bg-white text-gray-900 text-[10px] font-black px-3 py-1.5 rounded-lg transition cursor-pointer hover:bg-blue-600 hover:text-white shadow-sm"
->
-  ADD
-</button>
+                        
+                        {/* 🔥 2. SMART QTY BUTTON (ZIPPY CAFE) 🔥 */}
+                        {(() => {
+                          const cafeId = item.id || `cafe-${i}`;
+                          const cafeProduct = { id: cafeId, title: item.n, price: item.p, imagePath: item.i, category: 'Cafe' };
+                          const cartItem = cart.find(c => (c._id || c.id) === cafeId);
+                          
+                          if (cartItem && cartItem.quantity > 0) {
+                            return (
+                              <div className="flex items-center bg-white rounded-lg h-7 overflow-hidden shadow-sm border border-gray-200">
+                                 <button onClick={(e) => { e.stopPropagation(); removeFromCart(cafeId); }} className="w-7 h-full flex items-center justify-center text-lg text-gray-800 hover:bg-gray-100 transition-colors cursor-pointer">
+                                   −
+                                 </button>
+                                 <span className="w-5 text-center text-[11px] font-black text-gray-900">
+                                   {cartItem.quantity}
+                                 </span>
+                                 <button onClick={(e) => { e.stopPropagation(); addToCart(cafeProduct); }} className="w-7 h-full flex items-center justify-center text-lg text-gray-800 hover:bg-gray-100 transition-colors cursor-pointer">
+                                   +
+                                 </button>
+                              </div>
+                            );
+                          }
+                          
+                          return (
+                            <button 
+                              onClick={(e) => { e.stopPropagation(); addToCart(cafeProduct); }} 
+                              className="bg-white text-gray-900 text-[10px] font-black px-4 py-1.5 rounded-lg transition cursor-pointer hover:bg-blue-600 hover:text-white shadow-sm h-7 flex items-center"
+                            >
+                              ADD
+                            </button>
+                          );
+                        })()}
                      </div>
                   </div>
                ))}
