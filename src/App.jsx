@@ -1102,29 +1102,29 @@ const filteredProducts = activeTheme === 'All'
             }
           `}</style>
 
-          {/* Wrapper - Mobile me nav bar ke upar (bottom-24), Laptop me (bottom-8) */}
-          <div className="fixed bottom-24 md:bottom-8 left-1/2 z-[100] animate-pop-up-cart w-max">
+          {/* 🔥 FIX: Mobile me bottom-28 (nav bar ke upar), Laptop me bottom-8 */}
+          <div className="fixed bottom-28 md:bottom-8 left-1/2 z-[100] animate-pop-up-cart w-max">
             <div 
               onClick={() => setIsCartOpen(true)} 
-              className="bg-[#0b5cff] shadow-[0_10px_30px_rgba(11,92,255,0.4)] rounded-[1rem] md:rounded-[1.2rem] px-4 py-2.5 md:px-5 md:py-3 flex justify-between items-center cursor-pointer hover:bg-blue-700 hover:scale-[1.02] active:scale-95 transition-all min-w-[260px] md:min-w-[320px] border border-blue-400/30"
+              className="bg-[#0b5cff] shadow-[0_10px_30px_rgba(11,92,255,0.4)] rounded-[1rem] md:rounded-[1.2rem] px-3 py-1.5 md:px-5 md:py-3 flex justify-between items-center cursor-pointer hover:bg-blue-700 hover:scale-[1.02] active:scale-95 transition-all min-w-[200px] md:min-w-[320px] border border-blue-400/30"
             >
               
               {/* Left Side: Cart Text */}
-              <div className="flex flex-col items-start mr-4 md:mr-6">
-                 <span className="text-white font-black text-sm md:text-base tracking-wide leading-none mb-1">
+              <div className="flex flex-col items-start mr-3 md:mr-6">
+                 <span className="text-white font-black text-xs md:text-base tracking-wide leading-none mb-0.5">
                    CART
                  </span>
-                 <span className="text-blue-100 font-bold text-[10px] md:text-xs uppercase tracking-wider">
+                 <span className="text-blue-100 font-bold text-[8px] md:text-xs uppercase tracking-wider">
                    {totalItems} {totalItems === 1 ? 'ITEM' : 'ITEMS'}
                  </span>
               </div>
               
-              {/* Middle: Overlapping Item Thumbnails (Jaisa Screenshot me h) */}
-              <div className="flex items-center flex-1 justify-center mr-3 md:mr-4">
+              {/* Middle: Overlapping Item Thumbnails */}
+              <div className="flex items-center flex-1 justify-center mr-2 md:mr-4">
                 {cart.slice(0, 3).map((item, idx) => (
                   <div 
                     key={item._id || item.id || idx} 
-                    className={`w-7 h-7 md:w-9 md:h-9 bg-white rounded-md border-2 border-[#0b5cff] shadow-sm flex items-center justify-center overflow-hidden z-[${30 - idx * 10}] ${idx !== 0 ? '-ml-2.5 md:-ml-3' : ''}`}
+                    className={`w-6 h-6 md:w-9 md:h-9 bg-white rounded-md border-2 border-[#0b5cff] shadow-sm flex items-center justify-center overflow-hidden z-[${30 - idx * 10}] ${idx !== 0 ? '-ml-2 md:-ml-3' : ''}`}
                   >
                      <img 
                        src={item.imagePath?.startsWith('http') ? item.imagePath : getImgSrc(item.imagePath)} 
@@ -1136,7 +1136,7 @@ const filteredProducts = activeTheme === 'All'
                 ))}
                 {/* Agar 3 se jyada items hain toh +1, +2 dikhayega */}
                 {cart.length > 3 && (
-                  <div className="w-7 h-7 md:w-9 md:h-9 bg-blue-900 rounded-md border-2 border-[#0b5cff] flex items-center justify-center text-white text-[9px] md:text-[10px] font-black z-0 -ml-2.5 md:-ml-3 shadow-sm">
+                  <div className="w-6 h-6 md:w-9 md:h-9 bg-blue-900 rounded-md border-2 border-[#0b5cff] flex items-center justify-center text-white text-[8px] md:text-[10px] font-black z-0 -ml-2 md:-ml-3 shadow-sm">
                     +{cart.length - 3}
                   </div>
                 )}
@@ -1144,7 +1144,7 @@ const filteredProducts = activeTheme === 'All'
               
               {/* Right Side: Chevron Arrow */}
               <div className="flex items-center justify-center text-white">
-                <svg className="w-4 h-4 md:w-5 md:h-5 transform transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-3.5 h-3.5 md:w-5 md:h-5 transform transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M9 5l7 7-7 7" />
                 </svg>
               </div>
